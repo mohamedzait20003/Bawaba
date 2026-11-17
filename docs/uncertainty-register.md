@@ -79,4 +79,4 @@ Labels: **Verified**, **Secondary**, **Uncertain** (see PRODUCT_REQUIREMENTS).
 | GEN-01 | All | Whether `fetch` errors distinguish "never sent" from "sent" (affects `OutcomeUnknownError` on mutations) | Uncertain | CI run or npm docs | Open | | |
 | GEN-02 | All | The npm trusted-publishing bootstrap: whether a package must exist before a trusted publisher can be added (decision D7), and whether `changeset publish` authenticates through OIDC | Uncertain | CI run or npm docs | Open | | |
 | GEN-03 | All | IQD exponent per gateway | Uncertain | CI run or npm docs | Open | | |
-| GEN-04 | All | Whether Node 26 still accepts `--experimental-strip-types` for the TypeScript scripts | Uncertain | CI run or npm docs | Open | | |
+| GEN-04 | All | Whether Node 26 still accepts `--experimental-strip-types` for the TypeScript scripts | Verified | CI run | Confirmed | 2026-11-17 | CI "Node 26 (ubuntu-latest)" passed on commit b7e8fae |

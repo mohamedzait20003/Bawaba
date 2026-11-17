@@ -24,7 +24,7 @@ The public API is in [PRODUCT_SPECIFICATIONS.md](PRODUCT_SPECIFICATIONS.md), and
 
 1. **Zero runtime dependencies** in core, gateway clients and the facade.
 2. **Global `fetch` and Web Crypto only.** No `node:` imports, so the same code runs on Node, Bun, Deno, Cloudflare Workers and Vercel Edge.
-3. **Node `>=22.12`**, with dual ESM/CJS builds.
+3. **Node `>=22.12`** for the published packages, with dual ESM/CJS builds. Developing and building Bawaba needs Node `>=22.18` (root `engines`), because tsdown 0.23 requires it.
 4. **Wire-format field names inside gateway clients.** Signatures are computed over fields exactly as sent, undocumented fields must pass through untouched, and developers search each gateway's docs by wire name.
 5. **Typed errors that keep the raw response.**
 6. **Fail-closed webhook verification over the raw request body**, performed before anything else.
@@ -271,7 +271,7 @@ bawaba/
 │   └── CLAUDE.md               project rules for Claude Code sessions
 ├── .github/
 │   ├── workflows/              ci.yml, contract.yml, contract-gateway.yml, release.yml
-│   ├── CODEOWNERS              @bawaba/maintainers for now; per-gateway owners when developers join
+│   ├── CODEOWNERS              the lead for now; per-gateway owners when developers join
 │   └── dependabot.yml          grouped weekly updates: dev tooling and GitHub Actions
 ├── docs/
 │   ├── requirements/PRODUCT_REQUIREMENTS.md
@@ -335,7 +335,7 @@ The adapter packages (`express/`, `nestjs/`, `next/`) are created after 1.0, not
 | A5 | `publint` and `attw --pack . --profile node16` | **Pass** for all ten packages and 25 entry points. `node10` resolution fails, as expected, and is ignored by the profile. |
 | A6 | Vitest projects | **Pass.** One project per package folder (`vitest run --project tap`), configured inline in `vitest.config.ts` because Vitest rejects an empty project list. Tests import packages by name and run against source. |
 | A7 | Packed manifests | **Pass.** `pnpm pack` rewrites `workspace:^` and `catalog:`; the smoke test checks this. |
-| A8 | CJS and ESM consumers | **Pass** on Node 24.16.0. The TypeScript scripts also run on Node 22.12.0 (checked with `npx node@22.12.0`). The full matrix runs in CI. |
+| A8 | CJS and ESM consumers | **Pass** on Node 24.16.0. **Found in CI:** the full pipeline fails on Node 22.12.0, because tsdown 0.23.7 requires Node `^22.18.0` (it can't load `tsdown.config.ts` on 22.12). Development therefore needs Node 22.18+, and a separate job checks the published packages on 22.12.0 (section 11). |
 | A9 | Changesets fixed group | **Pass.** A trial changeset on core bumped all ten packages to the same snapshot version. |
 | — | Runtime portability | **Pass locally:** every built entry point imports under Deno 2.9.6 and Bun 1.4.4. |
 
@@ -414,7 +414,7 @@ packages/<name>/
   "scripts": { "build": "tsdown", "check": "publint && attw --pack . --profile node16" },
   "dependencies": { "@bawaba/core": "workspace:^" },
   "devDependencies": { "@bawaba/testing": "workspace:^" },
-  "repository": { "type": "git", "url": "git+https://github.com/bawaba/bawaba.git", "directory": "packages/paymob" },
+  "repository": { "type": "git", "url": "git+https://github.com/mohamedzait20003/Bawaba.git", "directory": "packages/paymob" },
   "publishConfig": { "access": "public", "provenance": true }
 }
 ```
@@ -460,7 +460,8 @@ All scripts are TypeScript (`scripts/*.ts`), type-checked with `scripts/tsconfig
 ## 11. CI/CD and repository settings
 
 - **`ci.yml`** runs on pushes to `main` and on all PRs, with `permissions: contents: read`.
-  - **Matrix:** Node 22.12.0 (pinned exactly), 24 and 26 on `ubuntu-latest`, plus `windows-latest` on Node 24.
+  - **Matrix:** Node 22.18.0 (the development floor, pinned exactly), 24 and 26 on `ubuntu-latest`, plus `windows-latest` on Node 24.
+  - **Runtime-floor job:** builds on Node 24, then switches to Node 22.12.0 (the floor for the published packages) and runs `pnpm test` and `pnpm smoke`. The full pipeline can't run on 22.12, because tsdown fails there (8.2).
   - **Steps:** checkout → `pnpm/action-setup@v6` (version from `packageManager`) → `setup-node@v7` with the pnpm cache → `pnpm install --frozen-lockfile` → `pnpm run ci`.
   - **Portability job:** `pnpm build`, then `pnpm smoke:runtime bun` and `pnpm smoke:runtime deno` (`oven-sh/setup-bun@v2`, `denoland/setup-deno@v2.0.5`).
 - **`contract.yml`** runs nightly at 02:30 UTC and on `workflow_dispatch`, **never on `pull_request`**.
@@ -472,12 +473,12 @@ All scripts are TypeScript (`scripts/*.ts`), type-checked with `scripts/tsconfig
   - **Uncertain:** whether `changeset publish` (which uses `pnpm publish`) authenticates with npm trusted publishing on its own. Confirm before the first release, together with GEN-02.
 - **`dependabot.yml`:** weekly; one grouped PR for development dependencies and one for GitHub Actions.
 - **GitHub settings (the lead, after the first push):**
-  - branch protection on `main`;
+  - a **ruleset on `main`**: restrict deletions; block force pushes; require a pull request (0 approvals while the lead works alone); require the six CI checks (`Node 22.18.0 (ubuntu-latest)`, `Node 24 (ubuntu-latest)`, `Node 26 (ubuntu-latest)`, `Node 24 (windows-latest)`, `Node 22.12.0 runtime floor`, `Runtime portability (Bun, Deno)`); repository admins may bypass, for emergencies and for the Changesets version PR (PRs opened with `GITHUB_TOKEN` don't trigger CI);
   - the `npm-publish` environment with required reviewers;
   - seven `contract-<gateway>` environments (about 25–35 secrets in total);
   - Dependabot;
   - private vulnerability reporting;
-  - the `@bawaba/maintainers` team that `CODEOWNERS` refers to.
+  - when contributors join: move the repository to a `bawaba` org, then update `CODEOWNERS` and every package `repository.url` (npm provenance requires the URL to match the repository that publishes).
 - **npm settings:**
   - the `@bawaba` org with 2FA enforced;
   - trusted publishing (OIDC) configured **separately for each of the ten packages** (plus the three adapters later);

@@ -39,7 +39,7 @@
 
 ## Development
 
-Requires Node 22.12 or later and pnpm (the version is pinned in `package.json`; Corepack or pnpm itself switches to it).
+Developing Bawaba requires Node 22.18 or later (the build tool, tsdown, needs it; the published packages still run on Node 22.12+) and pnpm (the version is pinned in `package.json`; Corepack or pnpm itself switches to it).
 
 ```sh
 pnpm install

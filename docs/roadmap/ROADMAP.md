@@ -35,7 +35,7 @@ With Claude Code, writing the code is no longer the bottleneck. Drafting the cor
 
 | Day | Build (with Claude Code) | In parallel (only the lead can do these) |
 |---|---|---|
-| **1** | Toolchain spike and full scaffold (section 3); CI green | Create the project email, npm org and GitHub org. **Request sandbox access from all seven gateways and contact their partner teams.** |
+| **1** | Toolchain spike and full scaffold (section 3); CI green | Create the project email and the npm org; the GitHub repository lives under the lead's own account until contributors join. **Request sandbox access from all seven gateways and contact their partner teams.** |
 | **2** | `@bawaba/core`: request pipeline, retry and no-retry policy, errors with `code`, `Money` and `Currency`, crypto (SHA-256/512, HMAC, hex/base64, constant-time compare) | Review every core file; chase sandbox replies |
 | **3** | `@bawaba/core`: idempotency store, capability levels, webhook input helpers, redaction, conformance suite. `@bawaba/testing` skeleton. Webhook receiver and fixture recorder/scrubber in `tools/`. | Deploy the webhook receiver; register its URL in every sandbox that exists |
 | **4** | `@bawaba/fawry` (the most unusual; it shapes the core) | Validate any sandbox that has arrived |
@@ -92,7 +92,7 @@ If A4 fails, fall back to tsup 9, or emit declarations with `tsc` and bundle the
 ### 3.3 Account actions (the lead)
 
 - Create the project email address that every gateway account is registered under (7.1).
-- Create the `@bawaba` npm org (with 2FA enforced) and the `bawaba` GitHub org (or `bawaba-js`) on the same day.
+- Create the `@bawaba` npm org (with 2FA enforced). The repository lives under the lead's own GitHub account (`mohamedzait20003/Bawaba`) until contributors join; then it moves to a `bawaba` GitHub org (GitHub redirects the old URL).
 - Request sandbox or test access from all seven gateways, and contact each one's partner or developer-relations team.
 
 ### 3.4 Day-1 commit plan
@@ -137,14 +137,16 @@ The target tree and file contents are in TECHNICAL_SPECIFICATIONS §7–§11.
 Status on 17 November 2026, after the day-1 commits:
 
 - [x] `pnpm run ci` passes locally on Windows (Node 24.16.0). The scripts also run on Node 22.12.0.
-- [ ] `pnpm run ci` passes in GitHub Actions on Node 22.12, 24 and 26 *(needs the push)*.
+- [ ] `pnpm run ci` passes in GitHub Actions on Node 22.18, 24 and 26, and the runtime-floor job passes on Node 22.12 *(first push: 22.12 failed because tsdown needs 22.18; Node 24, 26, Windows and Bun/Deno passed)*.
 - [x] All ten packages build to ESM and CJS with types; `publint` and `attw` are clean.
 - [x] The smoke consumers import every package with both `require` and `import`; every entry point also imports under Deno and Bun.
 - [x] The dependency guard enforces the one-way dependency direction, zero dependencies and no `node:` imports.
 - [x] No gateway endpoint, field name or signature recipe exists in code yet.
 - [x] The uncertainty register is seeded, and the validation log exists.
 - [x] The lockfile is committed, and pnpm is pinned through `packageManager`.
-- [ ] The GitHub and npm orgs exist, and the `@bawaba/maintainers` team exists *(the lead)*.
+- [x] The GitHub repository exists (`mohamedzait20003/Bawaba`, the lead's own account) and `main` is pushed.
+- [ ] `main` is protected by a ruleset, and the `npm-publish` environment and repository variables exist *(the lead; TECHNICAL_SPECIFICATIONS §11)*.
+- [ ] The `@bawaba` npm org exists *(the lead)*.
 - [ ] Sandbox requests have been sent to all seven gateways *(the lead)*.
 
 ## 4. Milestones

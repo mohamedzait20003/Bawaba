@@ -65,7 +65,7 @@ pnpm changeset                           # add a changeset for any published cha
 
 ## Conventions
 
-- **Node `>=22.12`**; pnpm is pinned through `packageManager`. The repository is developed on Windows, with LF line endings enforced by `.gitattributes`.
+- **Node:** published packages support `>=22.12`; developing and building needs `>=22.18` (tsdown 0.23 requires it). pnpm is pinned through `packageManager`. The repository is developed on Windows, with LF line endings enforced by `.gitattributes`.
 - **Notice:** every package README and `package.json` description includes *"Unofficial. Not affiliated with Paymob, Kashier, Fawry, Geidea, PayTabs, Amazon Payment Services or Tap Payments."*
 - **Trademarks:** no gateway logos, and no "amazon" in package names.
 - **Fixtures:** live in root `fixtures/<gateway>/`. They are scrubbed and re-signed with a test secret; the format is in TECHNICAL_SPECIFICATIONS §10.

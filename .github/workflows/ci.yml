@@ -20,7 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        node: ["22.12.0", "24", "26"]
+        node: ["22.18.0", "24", "26"]
         include:
           - os: windows-latest
             node: "24"
@@ -33,6 +33,25 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm run ci
+
+  runtime-floor:
+    name: Node 22.12.0 runtime floor
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22.12.0"
+      - run: node --version
+      - run: pnpm test
+      - run: pnpm smoke
 
   portability:
     name: Runtime portability (Bun, Deno)
