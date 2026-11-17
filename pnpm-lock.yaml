@@ -305,6 +305,16 @@ importers:
         specifier: workspace:^
         version: link:../testing
 
+  packages/tap:
+    dependencies:
+      '@bawaba/core':
+        specifier: workspace:^
+        version: link:../core
+    devDependencies:
+      '@bawaba/testing':
+        specifier: workspace:^
+        version: link:../testing
+
   packages/testing:
     dependencies:
       '@bawaba/core':
