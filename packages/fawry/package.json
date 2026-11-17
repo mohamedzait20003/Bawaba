@@ -49,7 +49,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bawaba/bawaba.git",
+    "url": "git+https://github.com/mohamedzait20003/Bawaba.git",
     "directory": "packages/fawry"
   },
   "publishConfig": {
