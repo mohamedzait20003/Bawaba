@@ -8,7 +8,7 @@ This document says **when and how** Bawaba gets built: the two-week schedule, th
 
 ## 1. Summary
 
-- **Who:** the lead, working **solo** and building with **Claude Code**. Up to two more developers may join later (section 6).
+- **Who:** the lead, working **solo** and building with **Claude Code**. Up to two more developers may join later (section 7).
 - **Scope:** **all seven gateways from the start**: Paymob, Kashier, Fawry, Geidea, PayTabs, Amazon Payment Services and Tap. There are no waves; no gateway is deferred or released without the others.
 - **Two-week target:** `0.1.0` of all ten packages (core, seven clients, facade, testing) on the npm **`next`** tag. Every operation not yet proven in a sandbox is marked `beta`.
 - **Then `1.0.0`:** once every gateway's verifiers are proven against real callbacks and an outside reviewer has checked the security-critical code. That depends on gateway onboarding, not on coding speed.
@@ -91,7 +91,7 @@ If A4 fails, fall back to tsup 9, or emit declarations with `tsc` and bundle the
 
 ### 3.3 Account actions (the lead)
 
-- Create the project email address that every gateway account is registered under (7.1).
+- Create the project email address that every gateway account is registered under (8.1).
 - Create the `@bawaba` npm org (with 2FA enforced). The repository lives under the lead's own GitHub account (`mohamedzait20003/Bawaba`) until contributors join; then it moves to a `bawaba` GitHub org (GitHub redirects the old URL).
 - Request sandbox or test access from all seven gateways, and contact each one's partner or developer-relations team.
 
@@ -149,7 +149,62 @@ Status on 17 November 2026, after the day-1 commits:
 - [ ] The `@bawaba` npm org exists *(the lead)*.
 - [ ] Sandbox requests have been sent to all seven gateways *(the lead)*.
 
-## 4. Milestones
+## 4. Day 2: `@bawaba/core` foundations
+
+**Goal:** the half of core that every gateway client needs first: errors, money, encoding, crypto and the request pipeline with its retry rules (TECHNICAL_SPECIFICATIONS §3.1–§3.6). Day 3 adds idempotency, capabilities, webhook input helpers, redaction and the conformance suite.
+
+### 4.1 Before starting (the lead)
+
+1. Push the commits already on `main`.
+2. Create the `npm-publish` environment and the `NPM_PUBLISH_ENABLED` / `CONTRACT_*` variables.
+3. Check that CI is green, including the new runtime-floor job.
+4. Turn on the `main` ruleset (TECHNICAL_SPECIFICATIONS §11).
+
+### 4.2 How the day runs
+
+- **Branch and PR:** all work goes on the branch `feat/core-foundations` and ends as **one pull request**, merged with "Rebase and merge" so that every commit below lands on `main`.
+- **Every commit passes `pnpm run ci`** before it is made.
+- **Tests first:** each commit writes its tests before the code.
+- **Expected values for crypto and encoding** come only from published standards (FIPS 180-4, RFC 4231, RFC 4648), never from our own code.
+- **Code style:** no `node:` imports in `packages/core/src`; Sonar-clean code; minimal comments.
+
+### 4.3 Day-2 commit plan
+
+| # | Commit | Contents | Tests (written first) |
+|---|---|---|---|
+| 1 | `feat(core): add error classes with stable codes` | `src/errors.ts`: `BawabaError` (`code`, `gateway`, `cause`), `ApiError` (`status`, `headers`, `requestId`, `raw`) with `BadRequestError`, `AuthenticationError`, `PermissionError`, `NotFoundError`, `RateLimitError`, `GatewayServerError`; plus `ConnectionError`, `OutcomeUnknownError` (`operation`, `merchantReference`), `SignatureVerificationError`, `CapabilityError`, `IdempotencyError`, `ConfigError`. **No `retryable` property on any error** (the Sarraf trap). `toJSON()` keeps `name`, `code`, `gateway` and `status` and leaves out `raw` and `headers` (full redaction arrives on Day 3). | Every class and code from PRODUCT_SPECIFICATIONS §4; `instanceof` chains; `code` survives `JSON.stringify`; `cause` kept; no `retryable` anywhere |
+| 2 | `feat(core): add currencies and exact money conversion` | `src/money.ts`: the `Currency` union and exponent table (2 or 3 decimals); `isCurrency`; `Money` validation (non-negative safe integer `minor`); `toDecimalString(money, exponent?)` and `fromDecimalString(text, currency, exponent?)` using string and `BigInt` math. Accepted text: `^\d+(\.\d+)?$` only. | Every currency, 2 and 3 decimals; `250` → `"250.00"`; KWD `1500` ↔ `"1.500"`; rejects `"1.005"` for EGP, floats, `"1e3"`, `"+1"`, `"1."`, `".5"`, whitespace, negatives, unsafe integers; round-trips at `Number.MAX_SAFE_INTEGER` |
+| 3 | `feat(core): add byte encoding helpers` | `src/encoding.ts`: UTF-8 (`TextEncoder`/`TextDecoder`), lowercase hex, base64. Hand-written, with no `Buffer`; `btoa` is avoided because of its Latin-1 limits. | The RFC 4648 §10 base64 vectors; hex of all 256 byte values; odd-length or invalid hex rejected; UTF-8 for Arabic text |
+| 4 | `feat(core): add Web Crypto hashing, HMAC and constant-time compare` | `src/crypto.ts`: `sha256`/`sha512` and `hmacSha256`/`hmacSha512` over `string \| Uint8Array` (raw bytes hashed as is), with hex or base64 output; `timingSafeEqual(a, b)` (length check, then an XOR over every byte); `safeEqualHex` and `safeEqualBase64` that decode before comparing | The FIPS 180-4 `"abc"` and empty-string digests; RFC 4231 test cases 1–7 for HMAC-SHA-256 and HMAC-SHA-512; uppercase and lowercase hex are equal; a length mismatch is false; a malformed input is false and never throws |
+| 5 | `feat(core): add the request pipeline` | `src/http/request.ts`: an injectable `fetch`; per-attempt timeout via `AbortSignal.timeout` combined with the caller's signal through `AbortSignal.any`; URI-encoded path parameters; query strings; JSON and form bodies; default and custom headers; `onRequest`/`onResponse` hooks (method, URL without the query, status, duration; never bodies); response parsing (JSON, text, or empty); `requestId` taken from a configurable header list; non-2xx statuses mapped to `ApiError` subclasses | A fake `fetch` records every request; path injection is encoded; hooks never see bodies or headers; the caller's abort is respected; a timeout fires; status mapping for 400/401/403/404/429/5xx. One MSW test covers the real-`fetch` path. |
+| 6 | `feat(core): enforce read retries and the no-retry rule for mutations` | `src/http/retry.ts`: the TECHNICAL_SPECIFICATIONS §3.2 table. Reads retry at most twice on network errors, 5xx and 429, with exponential backoff and full jitter, and honour `Retry-After` (capped). **Mutations never retry:** a timeout, network error or 5xx gives `OutcomeUnknownError`; a 4xx gives the definite `ApiError`. Clock, sleep and random are injectable for tests. | The full table: **a 5xx on a mutation makes exactly one `fetch` call and throws `OutcomeUnknownError`**; the same for a timeout and a network error; 429 on a mutation is not retried; a read retries twice then throws; `Retry-After` is respected; the jitter stays within its bounds |
+| 7 | `test(core): enforce coverage for the core foundations` | Coverage thresholds of 100% for lines and branches on the new core files in `vitest.config.ts`; `pnpm run ci` runs the tests with `--coverage` | The CI pipeline fails below the threshold |
+| 8 | `docs: record Day 2 decisions` | TECHNICAL_SPECIFICATIONS §3 and PRODUCT_SPECIFICATIONS §4 updated with the exact names chosen; GEN-01 notes (how "never sent" is detected); a changeset for `@bawaba/core` (`minor`) | — |
+
+### 4.4 Decisions to settle during the day
+
+Record them in commit 8.
+
+- **Default timeout:** 30 s per attempt (Proposal).
+- **`Retry-After` cap:** 5 s, so a read never blocks longer than its timeout budget (Proposal).
+- **Default request-ID headers:** `x-request-id` and `request-id`. Each client can add its own.
+- **"Never sent" (GEN-01):** only configuration errors raised before `fetch` is called count as never sent. Every `fetch` rejection on a mutation is an unknown outcome.
+- **Negative money:** rejected. Refunds carry a positive amount; direction comes from the operation.
+
+### 4.5 In parallel (the lead)
+
+- Review every core file in the PR, line by line, with extra care on commits 4 and 6.
+- Chase sandbox replies, and create the `@bawaba` npm org.
+
+### 4.6 Day-2 definition of done
+
+- [ ] The PR is merged into `main` with CI green on every check.
+- [ ] Core exports errors, money, encoding, crypto and `request()`, still with zero dependencies and no Node built-ins (`check-deps` passes).
+- [ ] Every crypto and encoding expected value cites its standard in the test name.
+- [ ] A 5xx, timeout or network error on a mutation is proven to make exactly one call and to throw `OutcomeUnknownError`.
+- [ ] `/code-review` has been run on the PR, and its findings are fixed or explained.
+
+## 5. Milestones
 
 The milestones define what each stage must achieve. The two-week schedule compresses Milestones 1–3 into days 1–12. Milestone 0 runs throughout and continues after day 14, and Milestone 4 follows day 14.
 
@@ -240,7 +295,7 @@ Milestone 0 decides **what ships as `supported` and what ships as `beta`**.
 | Tasks | `@bawaba/express`, `@bawaba/nestjs` (a module with a raw-body-aware webhook guard) and `@bawaba/next` (route-handler helpers); runnable examples; a docs site (Astro Starlight or VitePress); issue templates; outreach to each gateway's developer relations and to developer communities in Egypt and the Gulf |
 | Candidates | Paymob subscriptions and QuickLinks; Kashier payment links and saved cards; more gateways by demand (MyFatoorah, Moyasar, HyperPay, Checkout.com); a facade-only `@bawaba/stripe` |
 
-## 5. After day 14: the path to 1.0
+## 6. After day 14: the path to 1.0
 
 1. **Keep validating:** as each sandbox arrives, capture callbacks, add fixtures and lift `beta` flags in patch releases.
 2. **Track proof publicly:** keep the public status table and the validation log current.
@@ -249,9 +304,9 @@ Milestone 0 decides **what ships as `supported` and what ships as `beta`**.
 
 There is no fixed date: 1.0 waits on the slowest gateway's onboarding and on the review.
 
-## 6. Team
+## 7. Team
 
-### 6.1 Roles
+### 7.1 Roles
 
 The lead holds every role until others join.
 
@@ -270,16 +325,16 @@ The ownership areas follow the signature families, so shared helpers are written
 
 After day 14, the new developers' main work is **validation and hardening** (capturing callbacks, lifting `beta` flags, adapters, docs), not first drafts.
 
-### 6.2 Working rules
+### 7.2 Working rules
 
 - **`CODEOWNERS`:** each gateway package has an owner and a second reviewer from another track. No verifier change merges with only its author's approval.
 - **`CONTRIBUTING.md`:** contributions are licensed under MIT; the fixture-scrubbing rules; a DCO sign-off (`git commit -s`); and Conventional Commit messages (`feat(paymob): …`). There is no separate contributor licence agreement.
 - **Credentials:** nobody keeps gateway credentials on a personal machine longer than needed. CI secrets are the source of truth.
 - **Coordination:** a short weekly call, plus a GitHub Project board with one column per milestone, showing blocked sandbox requests.
 
-## 7. Prerequisites besides code
+## 8. Prerequisites besides code
 
-### 7.1 Gateway accounts
+### 8.1 Gateway accounts
 
 | Gateway | How test access is obtained | What may be needed |
 |---|---|---|
@@ -306,12 +361,12 @@ After day 14, the new developers' main work is **validation and hardening** (cap
   - at least one 3-decimal currency account (KWD or BHD).
 - **Documentation packs:** official Postman collections or PDFs, wherever the public pages are incomplete (Fawry's portal, PayTabs' region page).
 
-### 7.2 Legal and policy
+### 8.2 Legal and policy
 
 - **Licence: MIT** (decided 17 November 2026):
   - it is short, permissive and the most familiar licence on npm;
   - the copyright line is "The Bawaba contributors";
-  - contributions are accepted under the same licence ("inbound = outbound"), confirmed by the DCO sign-off on every commit (6.2);
+  - contributions are accepted under the same licence ("inbound = outbound"), confirmed by the DCO sign-off on every commit (7.2);
   - it has no explicit patent grant;
   - **no third-party code is copied.** Copying third-party data, such as Sarraf's Apache-2.0 fixtures, needs that data's licence text and attribution in `THIRD_PARTY_NOTICES.md`.
 - **Trademarks:**
@@ -330,7 +385,7 @@ After day 14, the new developers' main work is **validation and hardening** (cap
   - sandboxes only;
   - contract tests never use live keys.
 
-### 7.3 Budget
+### 8.3 Budget
 
 | Item | Cost |
 |---|---|
@@ -340,9 +395,9 @@ After day 14, the new developers' main work is **validation and hardening** (cap
 | Domain for the docs site | About US$10–20 a year |
 | Security review | Free from a trusted volunteer; otherwise a paid review before 1.0 |
 
-## 8. Decisions
+## 9. Decisions
 
-### 8.1 Settled
+### 9.1 Settled
 
 | ID | Decision | Date |
 |---|---|---|
@@ -355,22 +410,22 @@ After day 14, the new developers' main work is **validation and hardening** (cap
 | D3 | Fixture source of truth: **root `fixtures/`**, copied into `@bawaba/testing` at build time | 17 Nov 2026 |
 | D4 | `@bawaba/testing` depends on **core only**, with signers re-implemented independently from the docs | 17 Nov 2026 |
 | D5 | attw profile: **`--profile node16`** (confirm in spike A5) | 17 Nov 2026 |
-| D6 | Licence: **MIT** (7.2) | 17 Nov 2026 |
+| D6 | Licence: **MIT** (8.2) | 17 Nov 2026 |
 
-### 8.2 Proposed, awaiting confirmation
+### 9.2 Proposed, awaiting confirmation
 
 | ID | Decision | Recommendation |
 |---|---|---|
-| — | Gateway account holder | **The lead as an individual, under a project email** (7.1) |
+| — | Gateway account holder | **The lead as an individual, under a project email** (8.1) |
 | D7 | Reserve npm names with `0.0.0` placeholders | **Yes, if** spike B2 confirms trusted publishing needs an existing package |
 
-### 8.3 Open
+### 9.3 Open
 
 1. **Partner programs:** whether to approach each gateway's partner program now. Recommended: yes, together with the sandbox requests.
 2. **Kashier's primary flow** (hosted page or Payment Sessions). Decide from the validation results.
 3. **Tap:** a native client (current plan) or a wrapper of the official SDK. Revisit in Milestone 4.
 
-## 9. Risks
+## 10. Risks
 
 | # | Risk | Mitigation |
 |---|---|---|

@@ -183,7 +183,7 @@ IDs are stable; reference them in issues and PRs.
 | NFR-6 | **Tests:** core has full unit coverage of the retry and no-retry paths, idempotency, money conversion, crypto and error mapping. Every client passes the conformance suite. Changing any signed field must make verification fail. |
 | NFR-7 | **Supply chain:** npm trusted publishing with provenance; lockfile committed; secret scanning in CI. |
 | NFR-8 | **Naming and trademarks:** no gateway logos, and no "amazon" in any package name. Every README and `package.json` description says: *"Unofficial. Not affiliated with Paymob, Kashier, Fawry, Geidea, PayTabs, Amazon Payment Services or Tap Payments."* |
-| NFR-9 | **Licence:** MIT (decided 17 November 2026; see ROADMAP §7.2). |
+| NFR-9 | **Licence:** MIT (decided 17 November 2026; see ROADMAP §8.2). |
 
 ## 8. Priorities
 
