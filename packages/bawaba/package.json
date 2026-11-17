@@ -1,0 +1,132 @@
+{
+  "name": "bawaba",
+  "version": "0.0.0",
+  "description": "One TypeScript payments API for Paymob, Kashier, Fawry, Geidea, PayTabs, Amazon Payment Services and Tap. Unofficial. Not affiliated with Paymob, Kashier, Fawry, Geidea, PayTabs, Amazon Payment Services or Tap Payments.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "@bawaba/source": "./src/index.ts",
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./paymob": {
+      "@bawaba/source": "./src/paymob.ts",
+      "import": {
+        "types": "./dist/paymob.d.ts",
+        "default": "./dist/paymob.js"
+      },
+      "require": {
+        "types": "./dist/paymob.d.cts",
+        "default": "./dist/paymob.cjs"
+      }
+    },
+    "./kashier": {
+      "@bawaba/source": "./src/kashier.ts",
+      "import": {
+        "types": "./dist/kashier.d.ts",
+        "default": "./dist/kashier.js"
+      },
+      "require": {
+        "types": "./dist/kashier.d.cts",
+        "default": "./dist/kashier.cjs"
+      }
+    },
+    "./fawry": {
+      "@bawaba/source": "./src/fawry.ts",
+      "import": {
+        "types": "./dist/fawry.d.ts",
+        "default": "./dist/fawry.js"
+      },
+      "require": {
+        "types": "./dist/fawry.d.cts",
+        "default": "./dist/fawry.cjs"
+      }
+    },
+    "./geidea": {
+      "@bawaba/source": "./src/geidea.ts",
+      "import": {
+        "types": "./dist/geidea.d.ts",
+        "default": "./dist/geidea.js"
+      },
+      "require": {
+        "types": "./dist/geidea.d.cts",
+        "default": "./dist/geidea.cjs"
+      }
+    },
+    "./paytabs": {
+      "@bawaba/source": "./src/paytabs.ts",
+      "import": {
+        "types": "./dist/paytabs.d.ts",
+        "default": "./dist/paytabs.js"
+      },
+      "require": {
+        "types": "./dist/paytabs.d.cts",
+        "default": "./dist/paytabs.cjs"
+      }
+    },
+    "./payfort": {
+      "@bawaba/source": "./src/payfort.ts",
+      "import": {
+        "types": "./dist/payfort.d.ts",
+        "default": "./dist/payfort.js"
+      },
+      "require": {
+        "types": "./dist/payfort.d.cts",
+        "default": "./dist/payfort.cjs"
+      }
+    },
+    "./tap": {
+      "@bawaba/source": "./src/tap.ts",
+      "import": {
+        "types": "./dist/tap.d.ts",
+        "default": "./dist/tap.js"
+      },
+      "require": {
+        "types": "./dist/tap.d.cts",
+        "default": "./dist/tap.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "check": "publint && attw --pack . --profile node16"
+  },
+  "dependencies": {
+    "@bawaba/core": "workspace:^",
+    "@bawaba/paymob": "workspace:^",
+    "@bawaba/kashier": "workspace:^",
+    "@bawaba/fawry": "workspace:^",
+    "@bawaba/geidea": "workspace:^",
+    "@bawaba/paytabs": "workspace:^",
+    "@bawaba/payfort": "workspace:^",
+    "@bawaba/tap": "workspace:^"
+  },
+  "devDependencies": {
+    "@bawaba/testing": "workspace:^"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bawaba/bawaba.git",
+    "directory": "packages/bawaba"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

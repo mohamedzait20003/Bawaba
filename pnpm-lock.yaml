@@ -239,6 +239,37 @@ importers:
         specifier: 'catalog:'
         version: 5.1.0(@types/node@22.20.5)(@vitest/coverage-v8@5.1.0)(msw@3.0.6(@types/node@22.20.5)(supports-color@7.2.0)(typescript@7.0.2)(vite@8.3.8(@types/node@22.20.5)(yaml@2.9.1)))(vite@8.3.8(@types/node@22.20.5)(yaml@2.9.1))
 
+  packages/bawaba:
+    dependencies:
+      '@bawaba/core':
+        specifier: workspace:^
+        version: link:../core
+      '@bawaba/fawry':
+        specifier: workspace:^
+        version: link:../fawry
+      '@bawaba/geidea':
+        specifier: workspace:^
+        version: link:../geidea
+      '@bawaba/kashier':
+        specifier: workspace:^
+        version: link:../kashier
+      '@bawaba/payfort':
+        specifier: workspace:^
+        version: link:../payfort
+      '@bawaba/paymob':
+        specifier: workspace:^
+        version: link:../paymob
+      '@bawaba/paytabs':
+        specifier: workspace:^
+        version: link:../paytabs
+      '@bawaba/tap':
+        specifier: workspace:^
+        version: link:../tap
+    devDependencies:
+      '@bawaba/testing':
+        specifier: workspace:^
+        version: link:../testing
+
   packages/core:
     devDependencies:
       vitest:
