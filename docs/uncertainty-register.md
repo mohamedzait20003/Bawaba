@@ -77,6 +77,6 @@ Labels: **Verified**, **Secondary**, **Uncertain** (see PRODUCT_REQUIREMENTS).
 | TAP-09 | Tap | The charge `status` values | Uncertain | [tap.md](specifications/gateways/tap.md) validation checklist | Open | | |
 | TAP-10 | Tap | Length and charset limits of `reference.idempotent` | Uncertain | [tap.md](specifications/gateways/tap.md) validation checklist | Open | | |
 | GEN-01 | All | Whether `fetch` errors distinguish "never sent" from "sent" (affects `OutcomeUnknownError` on mutations) | Uncertain | CI run or npm docs | Open | | |
-| GEN-02 | All | The npm trusted-publishing bootstrap: whether a package must exist before a trusted publisher can be added (decision D7) | Uncertain | CI run or npm docs | Open | | |
+| GEN-02 | All | The npm trusted-publishing bootstrap: whether a package must exist before a trusted publisher can be added (decision D7), and whether `changeset publish` authenticates through OIDC | Uncertain | CI run or npm docs | Open | | |
 | GEN-03 | All | IQD exponent per gateway | Uncertain | CI run or npm docs | Open | | |
 | GEN-04 | All | Whether Node 26 still accepts `--experimental-strip-types` for the TypeScript scripts | Uncertain | CI run or npm docs | Open | | |

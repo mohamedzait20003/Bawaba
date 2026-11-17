@@ -134,14 +134,18 @@ The target tree and file contents are in TECHNICAL_SPECIFICATIONS §7–§11.
 
 ### 3.5 Day-1 definition of done
 
-- [ ] `pnpm run ci` passes locally on Windows and in GitHub Actions on Node 22.12, 24 and 26.
-- [ ] All ten packages build to ESM and CJS with types; `publint` and `attw` are clean.
-- [ ] The smoke consumers import every package with both `require` and `import`.
-- [ ] The dependency guard enforces the one-way dependency direction, zero dependencies and no `node:` imports.
-- [ ] No gateway endpoint, field name or signature recipe exists in code yet.
-- [ ] The uncertainty register is seeded, and the validation log exists.
-- [ ] The lockfile is committed, and pnpm is pinned through `packageManager`.
-- [ ] Sandbox requests have been sent to all seven gateways.
+Status on 17 November 2026, after the day-1 commits:
+
+- [x] `pnpm run ci` passes locally on Windows (Node 24.16.0). The scripts also run on Node 22.12.0.
+- [ ] `pnpm run ci` passes in GitHub Actions on Node 22.12, 24 and 26 *(needs the push)*.
+- [x] All ten packages build to ESM and CJS with types; `publint` and `attw` are clean.
+- [x] The smoke consumers import every package with both `require` and `import`; every entry point also imports under Deno and Bun.
+- [x] The dependency guard enforces the one-way dependency direction, zero dependencies and no `node:` imports.
+- [x] No gateway endpoint, field name or signature recipe exists in code yet.
+- [x] The uncertainty register is seeded, and the validation log exists.
+- [x] The lockfile is committed, and pnpm is pinned through `packageManager`.
+- [ ] The GitHub and npm orgs exist, and the `@bawaba/maintainers` team exists *(the lead)*.
+- [ ] Sandbox requests have been sent to all seven gateways *(the lead)*.
 
 ## 4. Milestones
 

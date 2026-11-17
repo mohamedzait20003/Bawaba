@@ -267,12 +267,12 @@ When `confirmWithStatusQuery` is on, `webhooks.verify` first verifies the callba
 ```text
 bawaba/
 ├── .changeset/                 config.json, README.md
-├── .github/
-│   ├── workflows/              ci.yml, contract.yml, release.yml
-│   ├── CODEOWNERS              an owner per gateway package, plus a reviewer from another track
-│   └── dependabot.yml          GitHub Actions and root dev dependencies only
 ├── .claude/
 │   └── CLAUDE.md               project rules for Claude Code sessions
+├── .github/
+│   ├── workflows/              ci.yml, contract.yml, contract-gateway.yml, release.yml
+│   ├── CODEOWNERS              @bawaba/maintainers for now; per-gateway owners when developers join
+│   └── dependabot.yml          grouped weekly updates: dev tooling and GitHub Actions
 ├── docs/
 │   ├── requirements/PRODUCT_REQUIREMENTS.md
 │   ├── specifications/PRODUCT_SPECIFICATIONS.md
@@ -280,9 +280,8 @@ bawaba/
 │   ├── specifications/gateways/ paymob.md kashier.md fawry.md geidea.md paytabs.md payfort.md tap.md
 │   ├── roadmap/ROADMAP.md
 │   ├── validation-log.md       what was confirmed, in which sandbox, and when
-│   └── uncertainty-register.md seeded from the gateway spec files and section 13
-├── examples/
-│   └── minimal/                one runnable example (day 12); more after 1.0
+│   └── uncertainty-register.md every open question from the gateway files, plus GEN items
+├── examples/                   (day 12) one runnable example; more after 1.0
 ├── fixtures/                   source of truth for scrubbed payloads (section 10)
 │   ├── paymob/ kashier/ fawry/ geidea/ paytabs/ payfort/ tap/
 │   └── README.md
@@ -290,17 +289,19 @@ bawaba/
 │   ├── core/  paymob/  kashier/  fawry/  geidea/  paytabs/  payfort/  tap/
 │   ├── bawaba/                 facade
 │   └── testing/
-├── scripts/
-│   ├── check-deps.mjs          dependency guard (section 9)
-│   ├── check-no-secrets.mjs
-│   └── smoke/                  run.mjs, consumer-esm/, consumer-cjs/
-├── tools/                      validation tooling, never published (section 12)
-├── .editorconfig  .gitattributes (* text=auto eol=lf)  .gitignore  .node-version (24)
+├── scripts/                    TypeScript, run with Node's type stripping (section 9)
+│   ├── check-deps.ts           dependency guard
+│   ├── check-no-secrets.ts     secret scanner
+│   ├── smoke/run.ts            pack, install and import every entry point (ESM and CJS)
+│   ├── smoke/runtimes.ts       import every built entry point under Bun, Deno or Node
+│   └── tsconfig.json           Node types, for scripts only
+├── tools/                      (day 3) validation tooling, never published (section 12)
+├── .editorconfig  .gitattributes  .gitignore  .node-version (24)
 ├── biome.json
 ├── CONTRIBUTING.md  LICENSE (MIT)  README.md  SECURITY.md
 ├── package.json                private root
-├── pnpm-workspace.yaml
-├── tsconfig.base.json  tsconfig.json (solution file)
+├── pnpm-workspace.yaml  pnpm-lock.yaml
+├── tsconfig.base.json  tsconfig.json
 └── vitest.config.ts
 ```
 
@@ -308,215 +309,179 @@ The adapter packages (`express/`, `nestjs/`, `next/`) are created after 1.0, not
 
 ## 8. Tooling and configuration
 
-### 8.1 Versions (checked with `npm view`, 17 November 2026)
+### 8.1 Versions (installed 17 November 2026)
 
 | Tool | Pin | Notes |
 |---|---|---|
-| pnpm | 12.21.0, through `packageManager` | Local machine has 12.3.4; update it before pinning |
-| `typescript` | 7.0.2 | The native (Go) compiler. Whether tsdown's declaration build works with it is Uncertain (spike A4). |
-| `tsdown` | 0.23.7 | Pinned exactly. Fallbacks: tsup 9, or `tsc` for declarations plus tsdown for JS. |
-| `vitest` | 5.1.0 | `test.projects` |
+| pnpm | 12.21.0, through `packageManager` | pnpm switches itself to the pinned version |
+| `typescript` | 7.0.2 | The native compiler; type-checks the workspace and scripts (8.4) |
+| `tsdown` | 0.23.7 | Dual ESM/CJS builds with `.d.ts` and `.d.cts` |
+| `vitest`, `@vitest/coverage-v8` | 5.1.0 | One project per package |
 | `msw` | 3.0.6 | Tests of the real `fetch` path |
 | `publint` | 0.3.25 | |
 | `@arethetypeswrong/cli` | 0.18.5 | `--profile node16` (decision D5) |
 | `@changesets/cli` | 3.0.3 | |
-| `@biomejs/biome` | 2.6.8 | Lint and format (decision D1) |
-| `@types/node` | 22.x | Root tooling and scripts only; never in core, gateway or facade packages |
+| `@biomejs/biome` | 2.6.8 | Lint and format, line width 160; Markdown excluded (decision D1) |
+| `@types/node` | 22.20.5 | Root tooling and scripts only; never in core, gateway or facade packages |
 
-Record the spike results (ROADMAP §3.1) here once they are known.
+### 8.2 Toolchain spike results (17 November 2026, ROADMAP §3.1)
 
-### 8.2 Root `package.json`
+| # | Check | Result |
+|---|---|---|
+| A1 | pnpm pinned through `packageManager` | **Pass.** pnpm 12.3.4 switched itself to 12.21.0. |
+| A2 | Catalog and settings in `pnpm-workspace.yaml` | **Pass.** `catalog:` resolves; `strictPeerDependencies` is accepted there; `pnpm install --frozen-lockfile` passes. pnpm rewrites the file on install and drops comments. |
+| A3 | TS 7 type-check | **Pass, with a changed design.** Project references and `composite` were dropped. One `noEmit` program (root `tsconfig.json`) covers `packages/*/src` and `packages/*/test`, and workspace packages resolve to their source through the `@bawaba/source` export condition (8.4). A Node global in package code fails, because `types: []` and `lib: ["es2024", "webworker"]` provide web APIs only. |
+| A4 | tsdown dual build with declarations under TS 7 | **Pass.** `index.js`, `index.cjs`, `index.d.ts` and `index.d.cts` (and the same for every subpath), from `isolatedDeclarations`. No fallback needed. |
+| A5 | `publint` and `attw --pack . --profile node16` | **Pass** for all ten packages and 25 entry points. `node10` resolution fails, as expected, and is ignored by the profile. |
+| A6 | Vitest projects | **Pass.** One project per package folder (`vitest run --project tap`), configured inline in `vitest.config.ts` because Vitest rejects an empty project list. Tests import packages by name and run against source. |
+| A7 | Packed manifests | **Pass.** `pnpm pack` rewrites `workspace:^` and `catalog:`; the smoke test checks this. |
+| A8 | CJS and ESM consumers | **Pass** on Node 24.16.0. The TypeScript scripts also run on Node 22.12.0 (checked with `npx node@22.12.0`). The full matrix runs in CI. |
+| A9 | Changesets fixed group | **Pass.** A trial changeset on core bumped all ten packages to the same snapshot version. |
+| — | Runtime portability | **Pass locally:** every built entry point imports under Deno 2.9.6 and Bun 1.4.4. |
 
-```jsonc
-{
-  "name": "bawaba-monorepo",
-  "private": true,
-  "type": "module",
-  "packageManager": "pnpm@12.21.0",
-  "engines": { "node": ">=22.12" },
-  "scripts": {
-    "build": "pnpm -r --filter \"./packages/*\" build",
-    "typecheck": "tsc -b",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "lint": "biome check .",
-    "format": "biome format --write .",
-    "check:packages": "pnpm -r --filter \"./packages/*\" check",
-    "check:deps": "node scripts/check-deps.mjs",
-    "check:secrets": "node scripts/check-no-secrets.mjs",
-    "smoke": "node scripts/smoke/run.mjs",
-    "ci": "pnpm lint && pnpm typecheck && pnpm check:deps && pnpm check:secrets && pnpm test && pnpm build && pnpm check:packages && pnpm smoke",
-    "changeset": "changeset",
-    "version-packages": "changeset version",
-    "release": "pnpm build && changeset publish"
-  },
-  "devDependencies": {
-    "@arethetypeswrong/cli": "catalog:", "@biomejs/biome": "catalog:", "@changesets/cli": "catalog:",
-    "@types/node": "catalog:", "msw": "catalog:", "publint": "catalog:", "tsdown": "catalog:",
-    "typescript": "catalog:", "vitest": "catalog:"
-  }
-}
-```
+**Other findings:**
+- **`pnpm ci` is a pnpm built-in** (a clean install) and takes precedence over the package script. Always use **`pnpm run ci`**.
+- **Biome 2.6 formats Markdown**, so `*.md` is excluded to keep the hand-written docs as they are.
 
-### 8.3 `pnpm-workspace.yaml`
+### 8.3 Root `package.json` scripts
 
-```yaml
-packages:
-  - "packages/*"
-  - "examples/*"
-
-catalog:
-  typescript: 7.0.2
-  vitest: 5.1.0
-  tsdown: 0.23.7
-  msw: 3.0.6
-  publint: 0.3.25
-  "@arethetypeswrong/cli": 0.18.5
-  "@changesets/cli": 3.0.3
-  "@biomejs/biome": 2.6.8
-  "@types/node": 22.x          # confirm the exact pin in spike A2
-
-strictPeerDependencies: true   # setting name confirmed in spike A2
-```
-
-Commit `pnpm-lock.yaml`. Internal dependencies use `workspace:^`, which pnpm rewrites to a real range on publish. Turborepo is optional; add it if CI build time passes about five minutes.
+| Script | Runs |
+|---|---|
+| `build` | `tsdown` in every package |
+| `typecheck` | `tsc -p tsconfig.json && tsc -p scripts/tsconfig.json` |
+| `test` / `test:watch` | Vitest |
+| `lint` / `format` | Biome |
+| `check:packages` | `publint && attw --pack . --profile node16` in every package |
+| `check:deps`, `check:secrets`, `smoke`, `smoke:runtime` | The TypeScript scripts in `scripts/`, run with `node --experimental-strip-types --disable-warning=ExperimentalWarning` so Node 22.12 runs them too |
+| `ci` | lint → typecheck → check:deps → check:secrets → test → build → check:packages → smoke. **Run it with `pnpm run ci`.** |
+| `changeset`, `version-packages`, `release` | Changesets |
 
 ### 8.4 TypeScript
 
-These options must be confirmed under TS 7 in spike A3.
-
 - **`tsconfig.base.json`:**
-  - strictness: `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`, `useUnknownInCatchVariables`;
-  - modules: `module` and `moduleResolution` set to `nodenext`; `target: es2023`;
-  - emit: `verbatimModuleSyntax`, `isolatedDeclarations`, `declaration`, `composite`.
-- **Core, gateway and facade packages:**
-  - `types: []`, so they get no Node types and a stray Node global fails type-checking;
-  - Web API types (`fetch`, `Response`, `crypto.subtle`, `TextEncoder`) come from `lib: ["es2024", "dom"]`, or from a minimal web-types dev dependency if `dom` lets browser-only globals through. Settle this in spike A3.
-- **Scripts and tests:** may use `@types/node`.
-- **Root `tsconfig.json`:** `files: []`, plus references to the ten packages. `pnpm typecheck` runs `tsc -b`.
+  - strictness: `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`, `noImplicitReturns`, `noFallthroughCasesInSwitch`, `useUnknownInCatchVariables`;
+  - modules: `module` and `moduleResolution` set to `nodenext`; `target: es2023`; `customConditions: ["@bawaba/source"]`;
+  - emit: `verbatimModuleSyntax`, `isolatedModules`, `isolatedDeclarations`, `declaration`;
+  - environment: `lib: ["es2024", "webworker"]` and `types: []`, which give `fetch`, `Response`, `crypto.subtle`, `TextEncoder` and `AbortSignal` but no DOM and no Node.
+- **Root `tsconfig.json`:** extends the base with `noEmit`, including every package's `src` and `test`.
+- **Package `tsconfig.json`:** extends the base with `include: ["src"]`; tsdown reads it.
+- **`scripts/tsconfig.json`:** `types: ["node"]`, `allowImportingTsExtensions` and `erasableSyntaxOnly`, so the scripts stay runnable by Node's type stripping (no enums or namespaces).
+- **The source condition:** every export carries `"@bawaba/source": "./src/<entry>.ts"` first. TypeScript and Vitest resolve it, so nothing needs building before type-checking or testing. Node, bundlers and other runtimes ignore unknown conditions and use `import` or `require`. `src/` is therefore published alongside `dist/`.
 
 ### 8.5 Vitest and Changesets
 
-- **`vitest.config.ts`:** `test.projects: ["packages/*"]`, with the `v8` coverage provider. Thresholds are turned on once core is implemented.
-- **`.changeset/config.json`:**
-
-```json
-{
-  "changelog": "@changesets/cli/changelog",
-  "commit": false,
-  "fixed": [["bawaba", "@bawaba/*"]],
-  "access": "public",
-  "baseBranch": "main",
-  "updateInternalDependencies": "patch",
-  "privatePackages": { "version": false, "tag": false }
-}
-```
-
-The fixed group keeps all versions in step during `0.x`. At `1.0`, the gateway packages switch to independent versions.
+- **`vitest.config.ts`:**
+  - one inline project per package folder, inheriting `resolve.conditions`;
+  - the default run includes `test/**/*.test.ts` and excludes `test/contract/`;
+  - `BAWABA_CONTRACT=1` runs only `test/contract/` (used by `contract.yml`);
+  - `v8` coverage over `packages/*/src`, with thresholds turned on once core is implemented.
+- **`.changeset/config.json`:** a fixed group `[["bawaba", "@bawaba/*"]]`, public access, base branch `main`. At `1.0`, the gateway packages switch to independent versions.
 
 ### 8.6 Package template
 
 ```text
 packages/<name>/
-├── src/index.ts            (+ src/webhooks.ts for gateway packages)
-├── test/index.test.ts      (+ test/contract/ for sandbox tests)
+├── src/index.ts            (+ src/webhooks.ts for gateways; src/conformance.ts for core; src/<gateway>.ts for bawaba)
+├── test/index.test.ts      imports the package by name (+ test/contract/ for sandbox tests)
 ├── package.json
-├── tsconfig.json           extends ../../tsconfig.base.json; references its workspace dependencies
-├── tsdown.config.ts        entries index (+ webhooks); format ["esm", "cjs"]; dts: true
-└── README.md               purpose, unofficial notice, capability table, status
+├── tsconfig.json           extends ../../tsconfig.base.json; include ["src"]
+├── tsdown.config.ts        named entries; format ["esm", "cjs"]; platform "neutral"; target es2023; dts
+└── README.md               purpose, unofficial notice, entry points, status, licence
 ```
 
-Placeholder rule for the scaffold: each package exports only a `VERSION` constant (plus `GATEWAY` for gateway packages) and one test. No gateway endpoint, field or signature recipe goes into code before that gateway's build day.
+**Placeholder rule:** until a gateway's build day, its package exports only `VERSION` and `GATEWAY`. No endpoint, field or signature recipe goes into code before then.
 
 ```jsonc
 // packages/paymob/package.json (excerpt)
 {
   "name": "@bawaba/paymob",
   "version": "0.0.0",
-  "type": "module",
-  "license": "MIT",
   "description": "Paymob client for Bawaba. Unofficial. Not affiliated with Paymob, Kashier, Fawry, Geidea, PayTabs, Amazon Payment Services or Tap Payments.",
+  "license": "MIT",
+  "type": "module",
   "engines": { "node": ">=22.12" },
+  "sideEffects": false,
   "exports": {
     ".": {
+      "@bawaba/source": "./src/index.ts",
       "import": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
       "require": { "types": "./dist/index.d.cts", "default": "./dist/index.cjs" }
     },
-    "./webhooks": { "...": "same shape" }
+    "./webhooks": { "...": "same shape" },
+    "./package.json": "./package.json"
   },
-  "files": ["dist"],
-  "sideEffects": false,
+  "files": ["dist", "src"],
   "scripts": { "build": "tsdown", "check": "publint && attw --pack . --profile node16" },
   "dependencies": { "@bawaba/core": "workspace:^" },
   "devDependencies": { "@bawaba/testing": "workspace:^" },
-  "repository": { "type": "git", "url": "…", "directory": "packages/paymob" },
+  "repository": { "type": "git", "url": "git+https://github.com/bawaba/bawaba.git", "directory": "packages/paymob" },
   "publishConfig": { "access": "public", "provenance": true }
 }
 ```
 
 | Package | Entries | `dependencies` | Workspace dev dependencies |
 |---|---|---|---|
-| `@bawaba/core` | `.`, `./conformance` (optional peer: `vitest`) | none | none |
+| `@bawaba/core` | `.`, `./conformance` (optional peer: `vitest`) | none | none (`vitest` from the catalog) |
 | each of the seven gateway packages | `.`, `./webhooks` | `@bawaba/core` | `@bawaba/testing` |
 | `bawaba` | `.`, plus `./paymob` … `./tap` | core and all seven gateway packages | `@bawaba/testing` |
-| `@bawaba/testing` | `.`, plus one subpath per gateway | `@bawaba/core` | none |
+| `@bawaba/testing` | `.` (one subpath per gateway later) | `@bawaba/core` | none |
 
 All packages start at `0.0.0`; the first changeset sets the version.
 
 ## 9. Enforcement scripts
 
-- **`scripts/check-deps.mjs`** fails when:
-  - a gateway package depends on another gateway package;
-  - core, a gateway package or the facade declares a runtime dependency outside `@bawaba/*`, other than the Vitest optional peer on `./conformance`;
-  - `@bawaba/testing` depends on anything other than core;
-  - any source file in core, a gateway package or the facade imports a `node:` module, or a bare Node built-in (`crypto`, `buffer` and so on);
-  - a package README or `description` lacks the unofficial notice.
-- **`scripts/check-no-secrets.mjs`** fails if a fixture or source file contains anything that looks like:
-  - a real gateway key (for example `sk_live_` or long high-entropy strings in key fields);
-  - a full card number that passes the Luhn check;
-  - an unscrubbed email or phone number in a fixture.
-- **`scripts/smoke/run.mjs`** packs every package, installs the tarballs into temporary ESM and CJS consumers, and imports every entry point.
+All scripts are TypeScript (`scripts/*.ts`), type-checked with `scripts/tsconfig.json`, and run by Node's type stripping.
+
+- **`scripts/check-deps.ts`** fails when:
+  - a gateway package depends on another gateway package (in any dependency field);
+  - core, a gateway package or the facade declares a runtime or peer dependency outside `@bawaba/*`, other than core's optional Vitest peer;
+  - `@bawaba/testing` depends on anything other than core, or a gateway package on anything internal other than core;
+  - any source file in core, a gateway package or the facade imports a `node:` module or a bare Node built-in;
+  - a package lacks `"license": "MIT"`, `sideEffects: false`, or the unofficial notice in its `description` or README.
+
+  Node globals such as `process` and `Buffer` are caught by the type-check instead (`types: []`).
+- **`scripts/check-no-secrets.ts`** scans every tracked or new, non-ignored file. It fails on:
+  - live-looking keys (`sk_live_…`, `pk_live_…`) and private key blocks;
+  - Luhn-valid card numbers that are not public test cards;
+  - committed `.env` files;
+  - in fixtures: credential fields whose values aren't visibly fake, and email addresses outside reserved domains.
+
+  A line can opt out with `bawaba-allow-secret`. Phone numbers aren't scanned; the fixture scrubber (section 12) replaces them.
+- **`scripts/smoke/run.ts`** packs every built package and installs the tarballs into a throwaway npm project outside the workspace. It then checks that no `workspace:` or `catalog:` range is left, and imports every entry point with `import` and `require`.
+- **`scripts/smoke/runtimes.ts <bun|deno|node>`** imports every built ESM entry point under that runtime.
 
 ## 10. Fixtures
 
-- **Location:** root `fixtures/<gateway>/` is the single source of truth. `@bawaba/testing` copies the fixtures into its `dist/` at build time, so nothing is committed twice.
-- **Format:** one JSON file per scenario, with these fields:
-  - `gateway`, `scenario`, `description`;
-  - `source` (`"sandbox"` or `"synthetic"`) and `recordedAt`;
-  - the test `secret`, the `signedString` and the `expectedSignature`;
-  - `request`: `{ rawBody (exactly as received), headers, query }`.
-- **Scrubbing:**
-  - Replace real keys, card BINs and last-4 digits, names, emails, phones and merchant IDs with clearly fake values.
-  - Record the sandbox account's alias, not its ID.
-  - Re-sign the scrubbed payload with the **test** secret.
+- **Location and rules:** root `fixtures/<gateway>/` is the single source of truth (decision D3). The format, scrubbing rules, proof rule and third-party rule are in [fixtures/README.md](../../fixtures/README.md).
+- **Bytes:** files there are kept byte-exact (`.gitattributes`: `fixtures/** -text`), because signatures cover exact bytes.
+- **Packaging:** `@bawaba/testing` copies the fixtures into its `dist/` at build time, so nothing is committed twice.
 - **Proof rule:** only `source: "sandbox"` fixtures can move a capability from `beta` to `supported`.
 
 ## 11. CI/CD and repository settings
 
 - **`ci.yml`** runs on pushes to `main` and on all PRs, with `permissions: contents: read`.
-  - **Matrix:** Node 22.12 (pinned exactly), 24 and 26 on `ubuntu-latest`, plus `windows-latest` on Node 24.
-  - **Steps:** checkout → `pnpm/action-setup` → `setup-node` with the pnpm cache → `pnpm install --frozen-lockfile` → `pnpm run ci`.
-  - **Runtime-portability job:** import every package's ESM build under Bun and Deno, installed by their official setup actions. Any Node-only API fails it.
-- **`contract.yml`** runs nightly and on `workflow_dispatch`, **never on `pull_request`**.
-  - **Jobs:** seven independent jobs, one per gateway. Each is gated on a repository variable (`CONTRACT_PAYMOB`, `CONTRACT_KASHIER`, `CONTRACT_FAWRY`, `CONTRACT_GEIDEA`, `CONTRACT_PAYTABS`, `CONTRACT_PAYFORT`, `CONTRACT_TAP`).
-  - **Secrets:** each job runs in its own GitHub environment holding only that gateway's secrets, so one sandbox outage doesn't block the others.
-  - **Command:** `vitest run --project <gateway> --dir test/contract`.
+  - **Matrix:** Node 22.12.0 (pinned exactly), 24 and 26 on `ubuntu-latest`, plus `windows-latest` on Node 24.
+  - **Steps:** checkout → `pnpm/action-setup@v6` (version from `packageManager`) → `setup-node@v7` with the pnpm cache → `pnpm install --frozen-lockfile` → `pnpm run ci`.
+  - **Portability job:** `pnpm build`, then `pnpm smoke:runtime bun` and `pnpm smoke:runtime deno` (`oven-sh/setup-bun@v2`, `denoland/setup-deno@v2.0.5`).
+- **`contract.yml`** runs nightly at 02:30 UTC and on `workflow_dispatch`, **never on `pull_request`**.
+  - **Jobs:** seven jobs, each gated on a repository variable (`CONTRACT_PAYMOB`, `CONTRACT_KASHIER`, `CONTRACT_FAWRY`, `CONTRACT_GEIDEA`, `CONTRACT_PAYTABS`, `CONTRACT_PAYFORT`, `CONTRACT_TAP`). A job-level `if` can't read matrix values, so they are separate jobs.
+  - **The reusable workflow:** each job calls `contract-gateway.yml`, which runs in the `contract-<gateway>` environment (holding only that gateway's secrets) with `BAWABA_CONTRACT=1 pnpm vitest run --project <gateway>`.
 - **`release.yml`** runs on pushes to `main`.
-  - `changesets/action` opens the "Version packages" PR.
-  - After that PR merges, the publish job runs in the protected `npm-publish` environment (required reviewers; `permissions: id-token: write, contents: write`) and runs `pnpm release`.
-  - It stays dormant until the trusted publishers are configured.
-- **`dependabot.yml`:** weekly, for Actions and root dev dependencies, with catalog bumps grouped into one PR.
-- **GitHub settings:**
+  - **Version job:** `changesets/action@v2.1.2` opens or updates the "Version packages" PR.
+  - **Publish job:** runs when no changesets are left (that PR was merged) **and** the repository variable `NPM_PUBLISH_ENABLED` is `true`. It uses the protected `npm-publish` environment (`id-token: write`), runs `pnpm run ci`, then `pnpm release`.
+  - **Uncertain:** whether `changeset publish` (which uses `pnpm publish`) authenticates with npm trusted publishing on its own. Confirm before the first release, together with GEN-02.
+- **`dependabot.yml`:** weekly; one grouped PR for development dependencies and one for GitHub Actions.
+- **GitHub settings (the lead, after the first push):**
   - branch protection on `main`;
-  - the `npm-publish` environment;
-  - seven contract-test environments (about 25–35 secrets in total);
+  - the `npm-publish` environment with required reviewers;
+  - seven `contract-<gateway>` environments (about 25–35 secrets in total);
   - Dependabot;
   - private vulnerability reporting;
-  - `CODEOWNERS`.
+  - the `@bawaba/maintainers` team that `CODEOWNERS` refers to.
 - **npm settings:**
   - the `@bawaba` org with 2FA enforced;
   - trusted publishing (OIDC) configured **separately for each of the ten packages** (plus the three adapters later);
-  - possibly a one-time `0.0.0` placeholder publish per name, if npm requires a package to exist before a trusted publisher can be added (Uncertain; decision D7).
+  - possibly a one-time `0.0.0` placeholder publish per name, if npm requires a package to exist first (GEN-02; decision D7).
 
 ## 12. Validation tooling (`tools/`, never published)
 
@@ -526,22 +491,20 @@ All packages start at `0.0.0`; the first changeset sets the version.
    - It never stores secrets.
 2. **Local tunnel** (cloudflared or ngrok), for interactive capture.
 3. **Playwright (dev dependency only)**, to drive hosted pages, 3DS challenges, the Amazon Payment Services form POST and Geidea's JS checkout. Gateways may block headless browsers (Uncertain); the fallback is a documented manual capture run before each release.
-4. **Fixture recorder and scrubber:** saves a scenario's request, response and callback, scrubs it (section 10) and re-signs it with a test secret.
+4. **Fixture recorder and scrubber:** saves a scenario's request, response and callback, scrubs it (section 10, including phone numbers) and re-signs it with a test secret.
 
-## 13. Uncertainty register seed
+## 13. Uncertainty register
 
-`docs/uncertainty-register.md` has the columns *ID, gateway, item, source label, how to confirm, status, date confirmed, evidence link*.
-
-**Gateway rows:** seed one row from every entry in the "Open questions" table of each gateway spec file. Keep the IDs: PMB, KSH, FWY, GDA, PTB, APS and TAP.
-
-**Cross-cutting rows (prefix GEN):**
+`docs/uncertainty-register.md` holds every open question from the "Open questions" table of each gateway spec file, with the same IDs (PMB, KSH, FWY, GDA, PTB, APS, TAP), plus these cross-cutting items:
 
 | ID | Question |
 |---|---|
 | GEN-01 | Whether `fetch` errors distinguish "never sent" from "sent" |
-| GEN-02 | The npm trusted-publishing bootstrap (decision D7) |
+| GEN-02 | The npm trusted-publishing bootstrap (decision D7), and whether `changeset publish` uses OIDC |
 | GEN-03 | IQD's exponent per gateway |
-| GEN-04 | TS 7 compatibility with tsdown declarations (spike A4) |
+| GEN-04 | Whether Node 26 still accepts `--experimental-strip-types` for the TypeScript scripts |
+
+TS 7 compatibility with tsdown declarations, formerly an open item, was settled by spike A4 (8.2).
 
 ## 14. Sources
 
