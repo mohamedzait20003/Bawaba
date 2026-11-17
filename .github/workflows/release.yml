@@ -19,7 +19,7 @@ jobs:
       contents: write
       pull-requests: write
     outputs:
-      hasChangesets: ${{ steps.changesets.outputs.hasChangesets }}
+      has-changesets: ${{ steps.changesets.outputs.has-changesets }}
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -31,16 +31,14 @@ jobs:
       - id: changesets
         uses: changesets/action@v2.1.2
         with:
-          version: pnpm version-packages
-          commit: "chore: version packages"
-          title: "chore: version packages"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          version-script: pnpm version-packages
+          commit-message: "chore: version packages"
+          pr-title: "chore: version packages"
 
   publish:
     name: Publish to npm
     needs: version
-    if: needs.version.outputs.hasChangesets == 'false' && vars.NPM_PUBLISH_ENABLED == 'true'
+    if: needs.version.outputs.has-changesets == 'false' && vars.NPM_PUBLISH_ENABLED == 'true'
     runs-on: ubuntu-latest
     environment: npm-publish
     permissions:
