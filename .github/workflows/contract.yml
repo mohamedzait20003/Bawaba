@@ -1,0 +1,59 @@
+name: Contract tests
+
+on:
+  schedule:
+    - cron: "30 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  paymob:
+    if: vars.CONTRACT_PAYMOB == 'true'
+    uses: ./.github/workflows/contract-gateway.yml
+    with:
+      gateway: paymob
+    secrets: inherit
+
+  kashier:
+    if: vars.CONTRACT_KASHIER == 'true'
+    uses: ./.github/workflows/contract-gateway.yml
+    with:
+      gateway: kashier
+    secrets: inherit
+
+  fawry:
+    if: vars.CONTRACT_FAWRY == 'true'
+    uses: ./.github/workflows/contract-gateway.yml
+    with:
+      gateway: fawry
+    secrets: inherit
+
+  geidea:
+    if: vars.CONTRACT_GEIDEA == 'true'
+    uses: ./.github/workflows/contract-gateway.yml
+    with:
+      gateway: geidea
+    secrets: inherit
+
+  paytabs:
+    if: vars.CONTRACT_PAYTABS == 'true'
+    uses: ./.github/workflows/contract-gateway.yml
+    with:
+      gateway: paytabs
+    secrets: inherit
+
+  payfort:
+    if: vars.CONTRACT_PAYFORT == 'true'
+    uses: ./.github/workflows/contract-gateway.yml
+    with:
+      gateway: payfort
+    secrets: inherit
+
+  tap:
+    if: vars.CONTRACT_TAP == 'true'
+    uses: ./.github/workflows/contract-gateway.yml
+    with:
+      gateway: tap
+    secrets: inherit

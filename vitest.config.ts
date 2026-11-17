@@ -11,14 +11,16 @@ const packageNames = existsSync("packages")
       .map((entry) => entry.name)
   : [];
 
+// Sandbox contract tests (test/contract/) run only in contract.yml, which sets BAWABA_CONTRACT=1.
+const contract = process.env.BAWABA_CONTRACT === "1";
+
 const projects = packageNames.map((name) => ({
   extends: true,
   test: {
     name,
     root: `packages/${name}`,
-    include: ["test/**/*.test.ts"],
-    // Sandbox contract tests run only in contract.yml.
-    exclude: ["test/contract/**"],
+    include: contract ? ["test/contract/**/*.test.ts"] : ["test/**/*.test.ts"],
+    exclude: contract ? [] : ["test/contract/**"],
   },
 }));
 
