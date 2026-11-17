@@ -23,8 +23,10 @@ const TEST_CARDS = new Set([
   "371449635398431",
   "6011111111111117",
 ]);
+
 // Domains reserved for documentation (RFC 2606) or obviously fake.
 const SAFE_EMAIL_DOMAINS = /@(example\.(com|org|net)|[a-z0-9-]+\.(example|test|invalid|localhost))$/i;
+
 // Credential-like field names in fixtures; their values must be visibly fake.
 const CREDENTIAL_KEY =
   /"(secret|secretKey|apiKey|paymentApiKey|hmacSecret|secureKey|serverKey|apiPassword|requestPhrase|responsePhrase|accessCode|password|token)"\s*:\s*"([^"]*)"/gi;
@@ -38,6 +40,40 @@ interface Rule {
 }
 
 const isFixture = (file: string): boolean => file.startsWith("fixtures/");
+
+function isRealEmailAddress(match: RegExpMatchArray): boolean {
+  const line = match.input ?? "";
+  const at = match.index ?? -1;
+  if (at <= 0) return false;
+
+  let start = at - 1;
+  while (start >= 0 && isEmailLocalChar(line[start] ?? "")) start--;
+
+  let end = at + 1;
+  while (end < line.length && isEmailDomainChar(line[end] ?? "")) end++;
+
+  while (end > at + 1 && ".-".includes(line[end - 1] ?? "")) end--;
+
+  const local = line.slice(start + 1, at);
+  const domain = line.slice(at + 1, end);
+  const lastDot = domain.lastIndexOf(".");
+  const topLevelDomain = domain.slice(lastDot + 1);
+  if (!local || lastDot < 0 || !/^[A-Za-z]{2,}$/.test(topLevelDomain)) return false;
+
+  return !SAFE_EMAIL_DOMAINS.test(`${local}@${domain}`);
+}
+
+function isEmailLocalChar(char: string): boolean {
+  const code = char.codePointAt(0);
+  if (code === undefined) return false;
+  return (code >= 48 && code <= 57) || (code >= 65 && code <= 90) || (code >= 97 && code <= 122) || "._%+-".includes(char);
+}
+
+function isEmailDomainChar(char: string): boolean {
+  const code = char.codePointAt(0);
+  if (code === undefined) return false;
+  return (code >= 48 && code <= 57) || (code >= 65 && code <= 90) || (code >= 97 && code <= 122) || ".-".includes(char);
+}
 
 const RULES: Rule[] = [
   { name: "live secret key", pattern: /\b[a-z]{0,4}_?sk_live_[A-Za-z0-9]{8,}/g },
@@ -56,9 +92,9 @@ const RULES: Rule[] = [
   },
   {
     name: "real email address in a fixture",
-    pattern: /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g,
+    pattern: /@/g,
     appliesTo: isFixture,
-    isViolation: (m) => !SAFE_EMAIL_DOMAINS.test(m[0]),
+    isViolation: isRealEmailAddress,
   },
 ];
 
@@ -75,32 +111,39 @@ function luhn(digits: string): boolean {
   return sum % 10 === 0;
 }
 
-const files = execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard"], { cwd: ROOT, encoding: "utf8" })
+const files = execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard"], { cwd: ROOT, encoding: "utf8" }) // NOSONAR: Git is an explicit local developer-tool dependency; repository data cannot control the executable or arguments.
   .split("\n")
   .map((f) => f.trim())
   .filter((f) => f.length > 0 && !SKIP.some((re) => re.test(f)));
 
 const problems: string[] = [];
+
 for (const file of files) {
   if (/(^|\/)\.env(\..+)?$/.test(file) && !file.endsWith(".env.example")) {
     problems.push(`${file}: .env files must never be committed`);
     continue;
   }
+
   const path = join(ROOT, file);
   let text: string;
+
   try {
     if (statSync(path).size > 2_000_000) continue;
     text = readFileSync(path, "utf8");
   } catch {
     continue; // deleted in the working tree
   }
+
   const lines = text.split("\n");
   lines.forEach((line, index) => {
     if (line.includes(ALLOW_MARKER)) return;
+
     for (const rule of RULES) {
       if (rule.appliesTo && !rule.appliesTo(file)) continue;
+
       for (const match of line.matchAll(rule.pattern)) {
         if (rule.isViolation && !rule.isViolation(match)) continue;
+
         problems.push(`${file}:${index + 1}: ${rule.name}`);
       }
     }
@@ -108,7 +151,8 @@ for (const file of files) {
 }
 
 if (problems.length > 0) {
-  console.error(`check-no-secrets: ${problems.length} problem(s)\n${problems.map((p) => `  - ${p}`).join("\n")}`);
+  const formattedProblems = problems.map((p) => "  - " + p).join("\n");
+  console.error(`check-no-secrets: ${problems.length} problem(s)\n${formattedProblems}`);
   console.error("Never commit real credentials or personal data. Scrub fixtures as described in fixtures/README.md.");
   process.exit(1);
 }

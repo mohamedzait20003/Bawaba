@@ -118,7 +118,8 @@ function importSpecifiers(source: string): string[] {
 }
 
 if (errors.length > 0) {
-  console.error(`check-deps: ${errors.length} problem(s)\n${errors.map((e) => `  - ${e}`).join("\n")}`);
+  const formattedErrors = errors.map((e) => "  - " + e).join("\n");
+  console.error(`check-deps: ${errors.length} problem(s)\n${formattedErrors}`);
   process.exit(1);
 }
 
