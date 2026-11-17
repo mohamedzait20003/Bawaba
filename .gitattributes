@@ -1,0 +1,9 @@
+# Normalize line endings to LF in the repository, regardless of core.autocrlf.
+* text=auto eol=lf
+
+# Fixtures hold raw bodies whose exact bytes are signed: never rewrite them.
+fixtures/** -text
+
+*.png binary
+*.jpg binary
+*.ico binary
