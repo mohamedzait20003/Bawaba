@@ -1,0 +1,64 @@
+{
+  "name": "@bawaba/core",
+  "version": "0.0.0",
+  "description": "Core of Bawaba: request pipeline, errors, money, crypto and idempotency. Unofficial. Not affiliated with Paymob, Kashier, Fawry, Geidea, PayTabs, Amazon Payment Services or Tap Payments.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "@bawaba/source": "./src/index.ts",
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./conformance": {
+      "@bawaba/source": "./src/conformance.ts",
+      "import": {
+        "types": "./dist/conformance.d.ts",
+        "default": "./dist/conformance.js"
+      },
+      "require": {
+        "types": "./dist/conformance.d.cts",
+        "default": "./dist/conformance.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "check": "publint && attw --pack . --profile node16"
+  },
+  "peerDependencies": {
+    "vitest": "^5.1.0"
+  },
+  "peerDependenciesMeta": {
+    "vitest": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "vitest": "catalog:"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bawaba/bawaba.git",
+    "directory": "packages/core"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}
