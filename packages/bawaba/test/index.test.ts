@@ -13,13 +13,5 @@ it("exports VERSION", () => {
 });
 
 it("exposes one subpath per gateway, backed by its client package", () => {
-  expect([paymob, kashier, fawry, geidea, paytabs, payfort, tap]).toEqual([
-    "paymob",
-    "kashier",
-    "fawry",
-    "geidea",
-    "paytabs",
-    "payfort",
-    "tap",
-  ]);
+  expect([paymob, kashier, fawry, geidea, paytabs, payfort, tap]).toEqual(["paymob", "kashier", "fawry", "geidea", "paytabs", "payfort", "tap"]);
 });
