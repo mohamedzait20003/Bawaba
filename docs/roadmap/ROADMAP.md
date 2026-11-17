@@ -126,15 +126,15 @@ The target tree and file contents are in TECHNICAL_SPECIFICATIONS §7–§11.
 | 22 | `test: add fixture folders and scrubbing rules` | `fixtures/<gateway>/.gitkeep`, `fixtures/README.md` | — |
 | 23 | `docs: seed validation log and uncertainty register` | `docs/validation-log.md`, `docs/uncertainty-register.md` (every open question from the gateway files, plus GEN) | — |
 | 24 | `docs: add README, contributing guide and security policy` | `README.md`, `CONTRIBUTING.md`, `SECURITY.md` | Every README and description has the unofficial notice (checked by `check-deps`) |
-| 25 | `ci: add CI, contract and release workflows` | `.github/workflows/ci.yml`, `contract.yml`, `release.yml` | YAML parses; `pnpm ci` passes locally |
+| 25 | `ci: add CI, contract and release workflows` | `.github/workflows/ci.yml`, `contract.yml`, `release.yml` | YAML parses; `pnpm run ci` passes locally |
 | 26 | `chore: add Dependabot and CODEOWNERS` | `.github/dependabot.yml`, `.github/CODEOWNERS` | — |
-| 27 | `docs: record toolchain spike results` | TECHNICAL_SPECIFICATIONS §8 notes; ticks in 3.5 | `pnpm ci` passes from a clean install |
+| 27 | `docs: record toolchain spike results` | TECHNICAL_SPECIFICATIONS §8 notes; ticks in 3.5 | `pnpm run ci` passes from a clean install |
 
 **After commit 27 (the lead):** create the GitHub repository, add it as `origin`, push `main`, and confirm that `ci.yml` is green on every matrix entry and that `contract.yml` runs from `workflow_dispatch` as a no-op.
 
 ### 3.5 Day-1 definition of done
 
-- [ ] `pnpm ci` passes locally on Windows and in GitHub Actions on Node 22.12, 24 and 26.
+- [ ] `pnpm run ci` passes locally on Windows and in GitHub Actions on Node 22.12, 24 and 26.
 - [ ] All ten packages build to ESM and CJS with types; `publint` and `attw` are clean.
 - [ ] The smoke consumers import every package with both `require` and `import`.
 - [ ] The dependency guard enforces the one-way dependency direction, zero dependencies and no `node:` imports.

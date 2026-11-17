@@ -15,7 +15,7 @@ Thank you for helping. Bawaba handles payment secrets and money-moving calls, so
 3. **Test vectors first.** Write each signature verifier's test from a value the gateway provided (a docs example or a captured callback) before implementing it. Never generate both the code and its expected values yourself.
 4. **Use Conventional Commits:** `feat(paymob): …`, `fix(core): …`, `docs: …`, `test: …`, `build: …`, `ci: …`, `chore: …`.
 5. **Add a changeset** (`pnpm changeset`) for any change to a published package.
-6. **Run `pnpm ci`.** It must pass locally before review.
+6. **Run `pnpm run ci`.** It must pass locally before review.
 
 ## Non-negotiable rules
 

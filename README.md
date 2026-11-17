@@ -43,7 +43,7 @@ Requires Node 22.12 or later and pnpm (the version is pinned in `package.json`; 
 
 ```sh
 pnpm install
-pnpm ci          # lint, typecheck, dependency guard, secret scan, tests, build, package checks, smoke test
+pnpm run ci          # lint, typecheck, dependency guard, secret scan, tests, build, package checks, smoke test
 pnpm test        # tests only
 ```
 

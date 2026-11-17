@@ -54,7 +54,7 @@ Read the relevant section before changing anything. When the docs and the code d
 
 ```sh
 pnpm install --frozen-lockfile
-pnpm ci                                  # lint, typecheck, check:deps, check:secrets, test, build, check:packages, smoke
+pnpm run ci                                  # lint, typecheck, check:deps, check:secrets, test, build, check:packages, smoke
 pnpm test                                # all Vitest projects
 pnpm vitest run --project <package>      # one package
 pnpm typecheck                           # tsc -b

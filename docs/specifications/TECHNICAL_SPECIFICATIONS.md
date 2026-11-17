@@ -495,7 +495,7 @@ All packages start at `0.0.0`; the first changeset sets the version.
 
 - **`ci.yml`** runs on pushes to `main` and on all PRs, with `permissions: contents: read`.
   - **Matrix:** Node 22.12 (pinned exactly), 24 and 26 on `ubuntu-latest`, plus `windows-latest` on Node 24.
-  - **Steps:** checkout → `pnpm/action-setup` → `setup-node` with the pnpm cache → `pnpm install --frozen-lockfile` → `pnpm ci`.
+  - **Steps:** checkout → `pnpm/action-setup` → `setup-node` with the pnpm cache → `pnpm install --frozen-lockfile` → `pnpm run ci`.
   - **Runtime-portability job:** import every package's ESM build under Bun and Deno, installed by their official setup actions. Any Node-only API fails it.
 - **`contract.yml`** runs nightly and on `workflow_dispatch`, **never on `pull_request`**.
   - **Jobs:** seven independent jobs, one per gateway. Each is gated on a repository variable (`CONTRACT_PAYMOB`, `CONTRACT_KASHIER`, `CONTRACT_FAWRY`, `CONTRACT_GEIDEA`, `CONTRACT_PAYTABS`, `CONTRACT_PAYFORT`, `CONTRACT_TAP`).
