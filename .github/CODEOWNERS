@@ -1,0 +1,18 @@
+*                         @bawaba/maintainers
+
+/packages/core/           @bawaba/maintainers
+/packages/bawaba/         @bawaba/maintainers
+/packages/testing/        @bawaba/maintainers
+
+/packages/paymob/         @bawaba/maintainers
+/packages/kashier/        @bawaba/maintainers
+/packages/geidea/         @bawaba/maintainers
+/packages/fawry/          @bawaba/maintainers
+/packages/payfort/        @bawaba/maintainers
+/packages/paytabs/        @bawaba/maintainers
+/packages/tap/            @bawaba/maintainers
+
+/docs/specifications/gateways/  @bawaba/maintainers
+/fixtures/                @bawaba/maintainers
+/scripts/                 @bawaba/maintainers
+/.github/                 @bawaba/maintainers
