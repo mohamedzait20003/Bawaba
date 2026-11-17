@@ -1,0 +1,22 @@
+# @bawaba/paymob
+
+A client for the Paymob API (Egypt, KSA, UAE, Oman), part of [Bawaba](../../README.md). It uses Paymob's own field names and works without the `bawaba` facade.
+
+> **Unofficial.** Not affiliated with Paymob, Kashier, Fawry, Geidea, PayTabs, Amazon Payment Services or Tap Payments.
+
+**Status: pre-alpha, not usable.** This package is a scaffold placeholder.
+
+## Entry points
+
+| Entry | Purpose |
+|---|---|
+| `@bawaba/paymob` | The client |
+| `@bawaba/paymob/webhooks` | Webhook verifiers, usable without a client instance |
+
+## Specification
+
+[docs/specifications/gateways/paymob.md](../../docs/specifications/gateways/paymob.md) is the source of truth for this package.
+
+## Licence
+
+MIT
