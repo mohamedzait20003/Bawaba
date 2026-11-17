@@ -255,6 +255,16 @@ importers:
         specifier: workspace:^
         version: link:../testing
 
+  packages/geidea:
+    dependencies:
+      '@bawaba/core':
+        specifier: workspace:^
+        version: link:../core
+    devDependencies:
+      '@bawaba/testing':
+        specifier: workspace:^
+        version: link:../testing
+
   packages/kashier:
     dependencies:
       '@bawaba/core':
