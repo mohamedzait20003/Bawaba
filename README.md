@@ -11,7 +11,7 @@
 - **Seven gateways, one SDK:** a full native client for each gateway, using its own field names, plus one facade (`bawaba`) for payments, refunds and verified webhooks across all of them.
 - **Safe with money:** money-moving calls are never retried, and a timeout or 5xx on a refund is an `OutcomeUnknownError`, never "retryable". Idempotency keys are built in.
 - **Safe with callbacks:** webhooks are verified over the raw body before anything else, fail closed, and separate signed fields from untrusted ones.
-- **Honest:** anything not yet proven against a real sandbox ships as `beta` and is off by default. The [validation log](docs/validation-log.md) shows what is proven.
+- **Honest:** anything not yet proven against a real sandbox ships as `beta` and is off by default. The [validation log](docs/logs/validation.md) shows what is proven.
 - **Light:** zero runtime dependencies and Web Crypto only, so it runs on Node 22.12+, Bun, Deno, Cloudflare Workers and Vercel Edge. ESM and CommonJS.
 
 ## Packages
@@ -35,7 +35,7 @@
 - [Product specifications](docs/specifications/PRODUCT_SPECIFICATIONS.md) (the public API)
 - [Technical specifications](docs/specifications/TECHNICAL_SPECIFICATIONS.md) and the [gateway specifications](docs/specifications/gateways/)
 - [Roadmap](docs/roadmap/ROADMAP.md)
-- [Validation log](docs/validation-log.md) and [uncertainty register](docs/uncertainty-register.md)
+- [Validation log](docs/logs/validation.md) and [uncertainty register](docs/logs/uncertainty.md)
 
 ## Development
 

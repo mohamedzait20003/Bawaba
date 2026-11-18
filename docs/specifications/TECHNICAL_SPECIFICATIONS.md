@@ -16,7 +16,7 @@ The public API is in [PRODUCT_SPECIFICATIONS.md](PRODUCT_SPECIFICATIONS.md), and
 - **Uncertain:** needs a sandbox call.
 - **Proposal:** a design choice.
 
-**When a sandbox contradicts a gateway spec file:** fix the file first, then the code, and record the change in `docs/validation-log.md`.
+**When a sandbox contradicts a gateway spec file:** fix the file first, then the code, and record the change in `docs/logs/validation.md`.
 
 ---
 
@@ -279,8 +279,9 @@ bawaba/
 │   ├── specifications/TECHNICAL_SPECIFICATIONS.md   (this file)
 │   ├── specifications/gateways/ paymob.md kashier.md fawry.md geidea.md paytabs.md payfort.md tap.md
 │   ├── roadmap/ROADMAP.md
-│   ├── validation-log.md       what was confirmed, in which sandbox, and when
-│   └── uncertainty-register.md every open question from the gateway files, plus GEN items
+│   └── logs/
+│       ├── validation.md       what was confirmed, in which sandbox, and when
+│       └── uncertainty.md      every open question from the gateway files, plus GEN items
 ├── examples/                   (day 12) one runnable example; more after 1.0
 ├── fixtures/                   source of truth for scrubbed payloads (section 10)
 │   ├── paymob/ kashier/ fawry/ geidea/ paytabs/ payfort/ tap/
@@ -496,7 +497,7 @@ All scripts are TypeScript (`scripts/*.ts`), type-checked with `scripts/tsconfig
 
 ## 13. Uncertainty register
 
-`docs/uncertainty-register.md` holds every open question from the "Open questions" table of each gateway spec file, with the same IDs (PMB, KSH, FWY, GDA, PTB, APS, TAP), plus these cross-cutting items:
+`docs/logs/uncertainty.md` holds every open question from the "Open questions" table of each gateway spec file, with the same IDs (PMB, KSH, FWY, GDA, PTB, APS, TAP), plus these cross-cutting items:
 
 | ID | Question |
 |---|---|

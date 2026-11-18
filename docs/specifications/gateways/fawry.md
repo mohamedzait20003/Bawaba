@@ -7,7 +7,7 @@
 **Sources:**
 - **Fawry's official portal** was unreachable during research, so most facts are **Secondary**: API catalogues, a community guide, a PHP validator package, and Sarraf's implementation (synthetic fixtures only; every Sarraf Fawry status row is `verified: false`).
 
-This file is the source of truth for `@bawabajs/fawry`. When a sandbox or the official portal contradicts it, update this file first, then the code, then `docs/validation-log.md`. The labels are defined in [PRODUCT_REQUIREMENTS](../../requirements/PRODUCT_REQUIREMENTS.md).
+This file is the source of truth for `@bawabajs/fawry`. When a sandbox or the official portal contradicts it, update this file first, then the code, then `docs/logs/validation.md`. The labels are defined in [PRODUCT_REQUIREMENTS](../../requirements/PRODUCT_REQUIREMENTS.md).
 
 ---
 

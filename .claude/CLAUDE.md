@@ -15,7 +15,7 @@ All paths are relative to the repository root.
 | [docs/specifications/TECHNICAL_SPECIFICATIONS.md](../docs/specifications/TECHNICAL_SPECIFICATIONS.md) | How it's built: core design, webhook rules, the cross-gateway comparison (§5), repo, tooling, CI |
 | [docs/specifications/gateways/](../docs/specifications/gateways/) `<gateway>.md` | **One spec per gateway** (`paymob`, `kashier`, `fawry`, `geidea`, `paytabs`, `payfort`, `tap`): hosts, credentials, operations, signature recipes, status mapping, facade mapping, test vectors, open questions, validation checklist, traps |
 | [docs/roadmap/ROADMAP.md](../docs/roadmap/ROADMAP.md) | Schedule, day-1 scaffold steps, milestones, team, prerequisites, decisions, risks |
-| `docs/validation-log.md`, `docs/uncertainty-register.md` | Created by the scaffold: what has been proven, and what is still unconfirmed (register IDs match the gateway files: PMB, KSH, FWY, GDA, PTB, APS, TAP, GEN) |
+| `docs/logs/validation.md`, `docs/logs/uncertainty.md` | Created by the scaffold: what has been proven, and what is still unconfirmed (register IDs match the gateway files: PMB, KSH, FWY, GDA, PTB, APS, TAP, GEN) |
 
 Read the relevant section before changing anything. When the docs and the code disagree, the docs win until they are updated. When a sandbox disagrees with a gateway spec file, the sandbox wins: update that file first, then the code, then the validation log and register.
 

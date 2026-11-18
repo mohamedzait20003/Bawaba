@@ -7,7 +7,7 @@
 **Sources:**
 - **developers.tap.company:** read 17 November 2026 (Verified unless marked).
 
-This file is the source of truth for `@bawabajs/tap`. When a sandbox contradicts it, update this file first, then the code, then `docs/validation-log.md`. The labels are defined in [PRODUCT_REQUIREMENTS](../../requirements/PRODUCT_REQUIREMENTS.md).
+This file is the source of truth for `@bawabajs/tap`. When a sandbox contradicts it, update this file first, then the code, then `docs/logs/validation.md`. The labels are defined in [PRODUCT_REQUIREMENTS](../../requirements/PRODUCT_REQUIREMENTS.md).
 
 ---
 
