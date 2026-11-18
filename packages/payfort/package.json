@@ -1,6 +1,6 @@
 {
   "name": "@bawabajs/payfort",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Amazon Payment Services client for Bawaba. Unofficial. Not affiliated with Paymob, Kashier, Fawry, Geidea, PayTabs, Amazon Payment Services or Tap Payments.",
   "license": "MIT",
   "type": "module",

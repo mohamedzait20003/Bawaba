@@ -1,6 +1,6 @@
 {
   "name": "bawaba",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "One TypeScript payments API for Paymob, Kashier, Fawry, Geidea, PayTabs, Amazon Payment Services and Tap. Unofficial. Not affiliated with Paymob, Kashier, Fawry, Geidea, PayTabs, Amazon Payment Services or Tap Payments.",
   "license": "MIT",
   "type": "module",

@@ -1,6 +1,6 @@
 {
   "name": "@bawabajs/kashier",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Kashier client for Bawaba. Unofficial. Not affiliated with Paymob, Kashier, Fawry, Geidea, PayTabs, Amazon Payment Services or Tap Payments.",
   "license": "MIT",
   "type": "module",

@@ -1,6 +1,6 @@
 {
   "name": "@bawabajs/core",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Core of Bawaba: request pipeline, errors, money, crypto and idempotency. Unofficial. Not affiliated with Paymob, Kashier, Fawry, Geidea, PayTabs, Amazon Payment Services or Tap Payments.",
   "license": "MIT",
   "type": "module",
