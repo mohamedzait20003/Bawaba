@@ -48,7 +48,7 @@ With Claude Code, writing the code is no longer the bottleneck. Drafting the cor
 | **11** | `bawaba` facade: types from the real overlap, four result kinds, statuses, dedupe keys, `webhooks.verify/inspect` | Paper design check: does Stripe fit the facade types? |
 | **12** | Facade finish; `examples/minimal`; per-package READMEs with the capability table and the unofficial notice | Re-run the conformance suite across all seven |
 | **13** | Hardening: `/code-review` on each package; fix the findings; secret scan; confirm there are no `node:` imports and no retried mutations | Line-by-line review of all seven verifiers |
-| **14** | Changesets; publish `0.1.0` to `next`; update `docs/validation-log.md` and the uncertainty register; set every unproven operation to `beta` | Publish the status table: which gateways are proven and which are beta |
+| **14** | Changesets; publish `0.1.0` to `next`; update `docs/logs/validation.md` and `docs/logs/uncertainty.md`; set every unproven operation to `beta` | Publish the status table: which gateways are proven and which are beta |
 
 A gateway's day is for writing its client. **Its validation happens whenever its credentials arrive**, even after day 14. Its `beta` flags are then lifted in a patch release.
 
@@ -212,7 +212,7 @@ The milestones define what each stage must achieve. The two-week schedule compre
 
 Milestone 0 decides **what ships as `supported` and what ships as `beta`**.
 
-**Tasks for all gateways:** capture real callbacks, reproduce every signature, and record the results in `docs/validation-log.md` and the uncertainty register.
+**Tasks for all gateways:** capture real callbacks, reproduce every signature, and record the results in `docs/logs/validation.md` and `docs/logs/uncertainty.md`.
 
 **Tasks per gateway:**
 - **Paymob:**
