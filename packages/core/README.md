@@ -1,4 +1,4 @@
-# @bawaba/core
+# @bawabajs/core
 
 The core of [Bawaba](../../README.md): the request pipeline, typed errors, money and currency helpers, Web Crypto signing and the idempotency store, shared by every Bawaba gateway client.
 
@@ -10,8 +10,8 @@ The core of [Bawaba](../../README.md): the request pipeline, typed errors, money
 
 | Entry | Purpose |
 |---|---|
-| `@bawaba/core` | Shared runtime code (zero dependencies, no Node built-ins) |
-| `@bawaba/core/conformance` | The test suite every gateway client must pass; needs `vitest` (optional peer dependency) |
+| `@bawabajs/core` | Shared runtime code (zero dependencies, no Node built-ins) |
+| `@bawabajs/core/conformance` | The test suite every gateway client must pass; needs `vitest` (optional peer dependency) |
 
 ## Licence
 

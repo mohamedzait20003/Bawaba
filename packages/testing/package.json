@@ -1,5 +1,5 @@
 {
-  "name": "@bawaba/testing",
+  "name": "@bawabajs/testing",
   "version": "0.0.0",
   "description": "Fixtures and test signers for Bawaba's gateway clients. Unofficial. Not affiliated with Paymob, Kashier, Fawry, Geidea, PayTabs, Amazon Payment Services or Tap Payments.",
   "license": "MIT",
@@ -10,7 +10,7 @@
   "sideEffects": false,
   "exports": {
     ".": {
-      "@bawaba/source": "./src/index.ts",
+      "@bawabajs/source": "./src/index.ts",
       "import": {
         "types": "./dist/index.d.ts",
         "default": "./dist/index.js"
@@ -31,7 +31,7 @@
     "check": "publint && attw --pack . --profile node16"
   },
   "dependencies": {
-    "@bawaba/core": "workspace:^"
+    "@bawabajs/core": "workspace:^"
   },
   "repository": {
     "type": "git",

@@ -2,7 +2,7 @@ import { existsSync, readdirSync } from "node:fs";
 import { defineConfig } from "vitest/config";
 
 // Workspace packages resolve to their TypeScript source, so tests never need a build first.
-const conditions = ["@bawaba/source"];
+const conditions = ["@bawabajs/source"];
 
 // One Vitest project per package, named after its folder (run one with `vitest run --project core`).
 const packageNames = existsSync("packages")

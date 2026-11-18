@@ -1,4 +1,4 @@
-# @bawaba/paymob
+# @bawabajs/paymob
 
 A client for the Paymob API (Egypt, KSA, UAE, Oman), part of [Bawaba](../../README.md). It uses Paymob's own field names and works without the `bawaba` facade.
 
@@ -10,8 +10,8 @@ A client for the Paymob API (Egypt, KSA, UAE, Oman), part of [Bawaba](../../READ
 
 | Entry | Purpose |
 |---|---|
-| `@bawaba/paymob` | The client |
-| `@bawaba/paymob/webhooks` | Webhook verifiers, usable without a client instance |
+| `@bawabajs/paymob` | The client |
+| `@bawabajs/paymob/webhooks` | Webhook verifiers, usable without a client instance |
 
 ## Specification
 

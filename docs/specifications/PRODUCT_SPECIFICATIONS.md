@@ -11,18 +11,18 @@ This document describes Bawaba **as developers will use it**: packages, configur
 | Package | Purpose | Entry points |
 |---|---|---|
 | `bawaba` | Unified facade; the package most users install | `.`, plus `./paymob`, `./kashier`, `./fawry`, `./geidea`, `./paytabs`, `./payfort`, `./tap` |
-| `@bawaba/core` | Request pipeline, errors, money, crypto, idempotency, shared types | `.`, `./conformance` |
-| `@bawaba/paymob` | Full Paymob client | `.`, `./webhooks` |
-| `@bawaba/kashier` | Full Kashier client | `.`, `./webhooks` |
-| `@bawaba/fawry` | Full Fawry client | `.`, `./webhooks` |
-| `@bawaba/geidea` | Full Geidea client | `.`, `./webhooks` |
-| `@bawaba/paytabs` | Full PayTabs (PT2) client | `.`, `./webhooks` |
-| `@bawaba/payfort` | Full client for the Amazon Payment Services (formerly PayFort) API | `.`, `./webhooks` |
-| `@bawaba/tap` | Full Tap Payments client | `.`, `./webhooks` |
-| `@bawaba/testing` | Scrubbed fixtures and test signers for all seven gateways | `.`, one subpath per gateway |
-| `@bawaba/express`, `@bawaba/nestjs`, `@bawaba/next` | Framework adapters that capture the raw body (after 1.0) | `.` |
+| `@bawabajs/core` | Request pipeline, errors, money, crypto, idempotency, shared types | `.`, `./conformance` |
+| `@bawabajs/paymob` | Full Paymob client | `.`, `./webhooks` |
+| `@bawabajs/kashier` | Full Kashier client | `.`, `./webhooks` |
+| `@bawabajs/fawry` | Full Fawry client | `.`, `./webhooks` |
+| `@bawabajs/geidea` | Full Geidea client | `.`, `./webhooks` |
+| `@bawabajs/paytabs` | Full PayTabs (PT2) client | `.`, `./webhooks` |
+| `@bawabajs/payfort` | Full client for the Amazon Payment Services (formerly PayFort) API | `.`, `./webhooks` |
+| `@bawabajs/tap` | Full Tap Payments client | `.`, `./webhooks` |
+| `@bawabajs/testing` | Scrubbed fixtures and test signers for all seven gateways | `.`, one subpath per gateway |
+| `@bawabajs/express`, `@bawabajs/nestjs`, `@bawabajs/next` | Framework adapters that capture the raw body (after 1.0) | `.` |
 
-- **Install** `bawaba` to use several gateways through one API, or a single `@bawaba/<gateway>` to use one gateway with its own field names.
+- **Install** `bawaba` to use several gateways through one API, or a single `@bawabajs/<gateway>` to use one gateway with its own field names.
 - **Bundle size:** `npm install bawaba` installs all seven (dependency-free) clients, but an app bundles only the gateway subpaths it imports.
 - **Runtime:** Node `>=22.12`, Bun, Deno, Cloudflare Workers and Vercel Edge, with ESM and CommonJS builds. Server-side only: clients refuse to start with secret keys in a browser-like environment.
 
@@ -285,7 +285,7 @@ Every client has:
 - **Gateway resources** using the gateway's own field names (5.2);
 - **`request()`**, an escape hatch for endpoints the SDK doesn't wrap yet, which still goes through the safe pipeline;
 - **`capabilities`** (2.2);
-- **`webhooks.*` verifiers**, plus `webhooks.inspect()`. The verifiers are also exported from `@bawaba/<gateway>/webhooks`, so they work without a client instance;
+- **`webhooks.*` verifiers**, plus `webhooks.inspect()`. The verifiers are also exported from `@bawabajs/<gateway>/webhooks`, so they work without a client instance;
 - **the same options:** `fetch`, `timeoutMs`, `headers`, `onRequest` and `onResponse` hooks (body-free), `idempotencyStore`, `allowBeta`, and a host override.
 
 ### 5.2 First-release resources
@@ -294,13 +294,13 @@ Only operations backed by the gateway's documentation are listed. Anything uncon
 
 | Client | Resources |
 |---|---|
-| `@bawaba/paymob` | `intentions.create/update`; `checkout.url()`; `transactions.retrieve/retrieveByOrderId/retrieveByMerchantOrderId/refund/void/capture`; `webhooks.constructEvent/constructRedirect/constructSubscriptionEvent`. Regions EG, SA, AE and OM, with overrides. Both auth modes, with a single-flight token cache. |
-| `@bawaba/kashier` | `checkout.hostedPageUrl()` (signed hosted page) and/or `sessions.create/retrieve` (the primary path is decided during validation); `transactions.list/retrieve`; `orders.refund/void/capture` (after the paths are confirmed); `webhooks.constructEvent`; `redirects.verify`. Test and live host selection. |
-| `@bawaba/fawry` | `charges.create` (card, wallet, PayAtFawry reference); `payments.status`; `refunds.create`; `orders.cancelUnpaid`; `webhooks.constructNotification` (V2 only; V1 MD5 notifications are rejected with a clear message). Staging and production selection. |
-| `@bawaba/geidea` | `sessions.create` (`Pay`, `PreAuthorize`, `AuthorizeCapture`); `checkout.scriptUrl()` per region; `orders.retrieve`; `orders.refund/capture/void`; `webhooks.constructCallback`. Regions EG, SA and AE. |
-| `@bawaba/paytabs` | `payments.request` (`sale` or `auth`; returns `redirect_url`); `transactions.query` (by `tran_ref` or `cart_id`); `transactions.refund/capture/void`; `webhooks.constructIpn` (raw-body HMAC); `redirects.verify` (the return POST). Region selection, with an explicit host override until the official host list is confirmed. |
-| `@bawaba/payfort` | `checkout.formFields()` (signed `paymentPage` form for `PURCHASE` and `AUTHORIZATION`); `payments.checkStatus`; `payments.capture/voidAuthorization/refund`; `webhooks.constructFeedback` (direct and notification feedback). Configurable SHA type; sandbox and production selection. |
-| `@bawaba/tap` | `charges.create/retrieve`; `authorizations.create`; `authorizations.capture` (a charge from the `auth_…` source); `refunds.create`; `webhooks.constructEvent` (`hashstring`); `reference.idempotent` passthrough; helpers for local-method sources (KNET, mada, Benefit, OmanNet, NAPS, Fawry). |
+| `@bawabajs/paymob` | `intentions.create/update`; `checkout.url()`; `transactions.retrieve/retrieveByOrderId/retrieveByMerchantOrderId/refund/void/capture`; `webhooks.constructEvent/constructRedirect/constructSubscriptionEvent`. Regions EG, SA, AE and OM, with overrides. Both auth modes, with a single-flight token cache. |
+| `@bawabajs/kashier` | `checkout.hostedPageUrl()` (signed hosted page) and/or `sessions.create/retrieve` (the primary path is decided during validation); `transactions.list/retrieve`; `orders.refund/void/capture` (after the paths are confirmed); `webhooks.constructEvent`; `redirects.verify`. Test and live host selection. |
+| `@bawabajs/fawry` | `charges.create` (card, wallet, PayAtFawry reference); `payments.status`; `refunds.create`; `orders.cancelUnpaid`; `webhooks.constructNotification` (V2 only; V1 MD5 notifications are rejected with a clear message). Staging and production selection. |
+| `@bawabajs/geidea` | `sessions.create` (`Pay`, `PreAuthorize`, `AuthorizeCapture`); `checkout.scriptUrl()` per region; `orders.retrieve`; `orders.refund/capture/void`; `webhooks.constructCallback`. Regions EG, SA and AE. |
+| `@bawabajs/paytabs` | `payments.request` (`sale` or `auth`; returns `redirect_url`); `transactions.query` (by `tran_ref` or `cart_id`); `transactions.refund/capture/void`; `webhooks.constructIpn` (raw-body HMAC); `redirects.verify` (the return POST). Region selection, with an explicit host override until the official host list is confirmed. |
+| `@bawabajs/payfort` | `checkout.formFields()` (signed `paymentPage` form for `PURCHASE` and `AUTHORIZATION`); `payments.checkStatus`; `payments.capture/voidAuthorization/refund`; `webhooks.constructFeedback` (direct and notification feedback). Configurable SHA type; sandbox and production selection. |
+| `@bawabajs/tap` | `charges.create/retrieve`; `authorizations.create`; `authorizations.capture` (a charge from the `auth_…` source); `refunds.create`; `webhooks.constructEvent` (`hashstring`); `reference.idempotent` passthrough; helpers for local-method sources (KNET, mada, Benefit, OmanNet, NAPS, Fawry). |
 
 ### 5.3 Configuration
 
@@ -317,8 +317,8 @@ Only operations backed by the gateway's documentation are listed. Anything uncon
 ### 5.4 Examples
 
 ```typescript
-import { Paymob } from "@bawaba/paymob";
-import { PayTabs } from "@bawaba/paytabs";
+import { Paymob } from "@bawabajs/paymob";
+import { PayTabs } from "@bawabajs/paytabs";
 
 const paymob = new Paymob({ secretKey, apiKey, hmacSecret, region: "EG" });
 const intention = await paymob.intentions.create({
@@ -363,7 +363,7 @@ const page = await paytabs.payments.request({
 | PCI scope | No method accepts card numbers or CVV; card-on-file uses gateway tokens only | Use hosted pages or gateway JavaScript for card entry; handle its own PCI DSS self-assessment (SAQ) |
 | Customer data | Stores nothing | Consent and retention under local data-protection law |
 
-## 8. `@bawaba/testing`
+## 8. `@bawabajs/testing`
 
 - **Fixtures:** scrubbed callbacks and responses for each gateway. Each says whether it came from a real sandbox (`source: "sandbox"`) or was written from the docs (`source: "synthetic"`).
 - **Test signers** for each gateway, to build valid signed callbacks in the application's own tests. They are written independently of the clients, so a misreading of the docs in one doesn't hide in the other.

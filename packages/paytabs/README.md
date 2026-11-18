@@ -1,4 +1,4 @@
-# @bawaba/paytabs
+# @bawabajs/paytabs
 
 A client for the PayTabs PT2 API (KSA, UAE, Egypt and other regions), part of [Bawaba](../../README.md). It uses PayTabs's own field names and works without the `bawaba` facade.
 
@@ -10,8 +10,8 @@ A client for the PayTabs PT2 API (KSA, UAE, Egypt and other regions), part of [B
 
 | Entry | Purpose |
 |---|---|
-| `@bawaba/paytabs` | The client |
-| `@bawaba/paytabs/webhooks` | Webhook verifiers, usable without a client instance |
+| `@bawabajs/paytabs` | The client |
+| `@bawabajs/paytabs/webhooks` | Webhook verifiers, usable without a client instance |
 
 ## Specification
 

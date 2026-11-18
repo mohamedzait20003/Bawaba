@@ -42,7 +42,7 @@ for (const folder of folders) {
   const deps = Object.keys(pkg.dependencies ?? {});
   const peers = Object.keys(pkg.peerDependencies ?? {});
   const devDeps = Object.keys(pkg.devDependencies ?? {});
-  const isInternal = (d: string): boolean => d === "bawaba" || d.startsWith("@bawaba/");
+  const isInternal = (d: string): boolean => d === "bawaba" || d.startsWith("@bawabajs/");
 
   // Metadata every published package needs.
   if (pkg.license !== "MIT") fail(name, `license must be "MIT" (found ${JSON.stringify(pkg.license)})`);
@@ -59,29 +59,29 @@ for (const folder of folders) {
   // Gateway packages never depend on each other, in any dependency field.
   if (GATEWAYS.includes(folder)) {
     for (const d of [...deps, ...peers, ...devDeps]) {
-      const other = GATEWAYS.find((g) => d === `@bawaba/${g}`);
+      const other = GATEWAYS.find((g) => d === `@bawabajs/${g}`);
       if (other && other !== folder) fail(name, `must not depend on another gateway package (${d})`);
     }
   }
 
   // Zero runtime dependencies outside the workspace.
   if (RUNTIME.has(folder)) {
-    for (const d of deps) if (!isInternal(d)) fail(name, `runtime dependency outside @bawaba/* is not allowed (${d})`);
+    for (const d of deps) if (!isInternal(d)) fail(name, `runtime dependency outside @bawabajs/* is not allowed (${d})`);
     for (const d of peers) {
       const allowed = folder === "core" && d === "vitest" && pkg.peerDependenciesMeta?.vitest?.optional === true;
-      if (!isInternal(d) && !allowed) fail(name, `peer dependency outside @bawaba/* is not allowed (${d})`);
+      if (!isInternal(d) && !allowed) fail(name, `peer dependency outside @bawabajs/* is not allowed (${d})`);
     }
   }
 
-  // @bawaba/testing depends on core only, so gateway packages can use it without a cycle.
+  // @bawabajs/testing depends on core only, so gateway packages can use it without a cycle.
   if (folder === "testing") {
-    for (const d of [...deps, ...peers]) if (d !== "@bawaba/core") fail(name, `may depend on @bawaba/core only (${d})`);
+    for (const d of [...deps, ...peers]) if (d !== "@bawabajs/core") fail(name, `may depend on @bawabajs/core only (${d})`);
   }
 
   // Direction: core depends on nothing internal; gateways on core only.
   if (folder === "core") for (const d of [...deps, ...peers]) if (isInternal(d)) fail(name, `core must not depend on ${d}`);
   if (GATEWAYS.includes(folder)) {
-    for (const d of [...deps, ...peers]) if (isInternal(d) && d !== "@bawaba/core") fail(name, `may depend on @bawaba/core only (${d})`);
+    for (const d of [...deps, ...peers]) if (isInternal(d) && d !== "@bawabajs/core") fail(name, `may depend on @bawabajs/core only (${d})`);
   }
 
   // No Node built-ins in portable runtime code.

@@ -1,6 +1,6 @@
 # Fixtures
 
-Scrubbed callbacks and API responses, one folder per gateway. This folder is the **single source of truth**: `@bawaba/testing` copies it into its build, and the contract tests and docs read it from here.
+Scrubbed callbacks and API responses, one folder per gateway. This folder is the **single source of truth**: `@bawabajs/testing` copies it into its build, and the contract tests and docs read it from here.
 
 Files here are stored byte for byte (`.gitattributes` disables line-ending conversion), because signatures cover the exact bytes.
 

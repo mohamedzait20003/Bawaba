@@ -26,7 +26,7 @@ Merchants in Egypt and the Gulf rarely use a single payment gateway. They pick g
 
 | User | Need | What Bawaba gives them |
 |---|---|---|
-| **Single-gateway developer** | A good client for one gateway, following that gateway's own docs | A full gateway-native client (`@bawaba/paymob`, etc.) using the gateway's own field names, with no facade required |
+| **Single-gateway developer** | A good client for one gateway, following that gateway's own docs | A full gateway-native client (`@bawabajs/paymob`, etc.) using the gateway's own field names, with no facade required |
 | **Multi-gateway merchant developer** | One integration covering several gateways and countries | The `bawaba` facade: one payment, refund and webhook API across all seven gateways, with an escape hatch to each native client |
 | **Platform and plugin builders** (e-commerce platforms, agencies) | Safe, well-typed building blocks that run on any runtime | Zero dependencies, Web Crypto, typed errors with stable codes, conformance-tested clients |
 
@@ -52,13 +52,13 @@ All three run server-side code. Bawaba is not a browser library; it refuses to r
 
 | Gateway | Package | Main markets |
 |---|---|---|
-| Paymob | `@bawaba/paymob` | Egypt, KSA, UAE, Oman |
-| Kashier | `@bawaba/kashier` | Egypt |
-| Fawry | `@bawaba/fawry` | Egypt (including PayAtFawry cash reference codes) |
-| Geidea | `@bawaba/geidea` | Egypt, KSA, UAE |
-| PayTabs | `@bawaba/paytabs` | KSA, UAE, Egypt, Qatar, Oman, Jordan, Iraq and others |
-| Amazon Payment Services (formerly PayFort) | `@bawaba/payfort` | UAE, KSA, Egypt, Kuwait, Qatar, Oman, Bahrain, Jordan |
-| Tap Payments | `@bawaba/tap` | Kuwait, KSA, UAE, Bahrain, Qatar, Oman, Egypt |
+| Paymob | `@bawabajs/paymob` | Egypt, KSA, UAE, Oman |
+| Kashier | `@bawabajs/kashier` | Egypt |
+| Fawry | `@bawabajs/fawry` | Egypt (including PayAtFawry cash reference codes) |
+| Geidea | `@bawabajs/geidea` | Egypt, KSA, UAE |
+| PayTabs | `@bawabajs/paytabs` | KSA, UAE, Egypt, Qatar, Oman, Jordan, Iraq and others |
+| Amazon Payment Services (formerly PayFort) | `@bawabajs/payfort` | UAE, KSA, Egypt, Kuwait, Qatar, Oman, Bahrain, Jordan |
+| Tap Payments | `@bawabajs/tap` | Kuwait, KSA, UAE, Bahrain, Qatar, Oman, Egypt |
 
 Together they reach the local networks and wallets that matter in the region: mada, KNET, Benefit, OmanNet, NAPS, Meeza, STC Pay, Apple Pay, and the Tabby, Tamara and valU instalment plans.
 
@@ -125,7 +125,7 @@ The supported currencies are EGP, SAR, AED, QAR, MAD, USD, EUR and GBP (2 decima
 
 IDs are stable; reference them in issues and PRs.
 
-### Core (`@bawaba/core`)
+### Core (`@bawabajs/core`)
 
 | ID | Requirement |
 |---|---|
@@ -138,9 +138,9 @@ IDs are stable; reference them in issues and PRs.
 | FR-C7 | Crypto covers SHA-256 and SHA-512, plain and HMAC, with hex and base64 output, plus a constant-time compare. It uses Web Crypto only. |
 | FR-C8 | Every operation and payment method has a capability level: `supported`, `beta` or `unsupported`. Calling a `beta` feature throws unless `allowBeta: true`. |
 | FR-C9 | Secrets, phrases, client secrets, card data and billing data never appear in logs, errors or `toJSON` output. |
-| FR-C10 | A conformance suite that every gateway client must pass ships at `@bawaba/core/conformance`. |
+| FR-C10 | A conformance suite that every gateway client must pass ships at `@bawabajs/core/conformance`. |
 
-### Gateway clients (`@bawaba/<gateway>`)
+### Gateway clients (`@bawabajs/<gateway>`)
 
 | ID | Requirement |
 |---|---|
@@ -167,7 +167,7 @@ IDs are stable; reference them in issues and PRs.
 
 | ID | Requirement |
 |---|---|
-| FR-T1 | `@bawaba/testing` ships scrubbed fixtures and test signers for all seven gateways. The signers are written independently of the clients. |
+| FR-T1 | `@bawabajs/testing` ships scrubbed fixtures and test signers for all seven gateways. The signers are written independently of the clients. |
 | FR-T2 | Every gateway's package README states the capability table, the unofficial notice and how to verify webhooks. |
 | FR-T3 | A public validation log records what was confirmed in which sandbox and when. A public uncertainty register lists what isn't confirmed yet. |
 
@@ -190,7 +190,7 @@ IDs are stable; reference them in issues and PRs.
 | Priority | Features |
 |---|---|
 | **Must** (in 0.1.0, proven for 1.0) | Core; all seven clients with create-payment, retrieve, refund, and webhook verification over the raw body; typed errors with `code`; the no-retry rule; idempotency keys (passed to Tap); capability levels with beta opt-in; redaction; `Money` with typed currencies; facade `createPayment` with four result kinds; `webhooks.verify` with normalized events and dedupe keys; `webhooks.inspect` |
-| **Should** (before 1.0) | Void and capture where supported; redirect verification; the Paymob subscription verifier; `@bawaba/testing` signers and fixtures; status re-query; the conformance suite published |
+| **Should** (before 1.0) | Void and capture where supported; redirect verification; the Paymob subscription verifier; `@bawabajs/testing` signers and fixtures; status re-query; the conformance suite published |
 | **Later** | Framework adapters (Express, NestJS, Next.js) and examples; Kashier transaction listing through the facade; Paymob subscriptions and QuickLinks; saved cards and tokenization across gateways; payouts as separate packages; more gateways |
 | **Excluded** | Routing or failover; holding or settling funds; any API accepting raw card numbers or CVV (including the Amazon Payment Services and PayTabs "own form" and direct card APIs); strict runtime validation of responses |
 
@@ -212,22 +212,24 @@ IDs are stable; reference them in issues and PRs.
 
 `bawaba` describes the product, is easy for Arabic speakers to say and remember, and contains no gateway's trademark.
 
-npm registry check (16 November 2026):
+npm registry check (16 November 2026, scope corrected 18 November 2026):
 
 | Name | Status |
 |---|---|
-| `bawaba`, `@bawaba/core`, `bawaba-js`, `bawabajs` | Free. The `@bawaba` org must still be created to hold the scope. |
+| `bawaba` (unscoped, the facade) | Free (Verified 18 November 2026) |
+| The `bawaba` scope | **Taken** by an unrelated npm account (Verified 18 November 2026: npm refuses the org name), so the packages use **`@bawabajs/*`** |
+| `@bawabajs` | The project's npm org, created 18 November 2026 |
 | `bawabah` | Taken (an unrelated app) |
 | `dafaa` (دفع), `tahseel` (تحصيل) | Free; fallback names |
 
 Before the first public release, search GitHub and the Egyptian trademark register. "Al Bawaba" is a known news site, though the confusion risk is low for a developer library.
 
-`@bawaba/payfort` follows the API's own host names (`*.payfort.com`). Its README calls it "a client for the Amazon Payment Services (formerly PayFort) API".
+`@bawabajs/payfort` follows the API's own host names (`*.payfort.com`). Its README calls it "a client for the Amazon Payment Services (formerly PayFort) API".
 
 ## 11. Stripe and future gateways
 
 - **Stripe is not a gateway in scope.** Egyptian merchants can't open a Stripe account directly (Secondary; confirm on `stripe.com/global`). Stripe already has an excellent official SDK, and adding it would pull the facade toward Stripe's model.
-- **After 1.0, if users ask:** a facade-only `@bawaba/stripe` wrapping the official `stripe` package as a peer dependency, for businesses with a foreign company that collect international cards on Stripe.
+- **After 1.0, if users ask:** a facade-only `@bawabajs/stripe` wrapping the official `stripe` package as a peer dependency, for businesses with a foreign company that collect international cards on Stripe.
 - **Design check now:** sketch on paper how Stripe would fit the facade's types. If it can't fit without special cases, the facade is too shaped around particular gateways.
 - **Candidate gateways after 1.0, chosen by demand:** MyFatoorah (Kuwait and the Gulf), Moyasar (KSA), HyperPay (KSA, UAE, Jordan) and Checkout.com (UAE, KSA).
 

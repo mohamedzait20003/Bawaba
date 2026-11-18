@@ -19,15 +19,15 @@
 | Package | Purpose |
 |---|---|
 | `bawaba` | The unified facade, with one subpath per gateway (`bawaba/paymob` … `bawaba/tap`) |
-| `@bawaba/core` | Request pipeline, errors, money, crypto, idempotency |
-| `@bawaba/paymob` | Paymob client (Egypt, KSA, UAE, Oman) |
-| `@bawaba/kashier` | Kashier client (Egypt) |
-| `@bawaba/fawry` | Fawry client (Egypt), including PayAtFawry reference codes |
-| `@bawaba/geidea` | Geidea client (Egypt, KSA, UAE) |
-| `@bawaba/paytabs` | PayTabs PT2 client (KSA, UAE, Egypt and other regions) |
-| `@bawaba/payfort` | Amazon Payment Services (formerly PayFort) client |
-| `@bawaba/tap` | Tap Payments client (Gulf and Egypt) |
-| `@bawaba/testing` | Fixtures and test signers for your own tests |
+| `@bawabajs/core` | Request pipeline, errors, money, crypto, idempotency |
+| `@bawabajs/paymob` | Paymob client (Egypt, KSA, UAE, Oman) |
+| `@bawabajs/kashier` | Kashier client (Egypt) |
+| `@bawabajs/fawry` | Fawry client (Egypt), including PayAtFawry reference codes |
+| `@bawabajs/geidea` | Geidea client (Egypt, KSA, UAE) |
+| `@bawabajs/paytabs` | PayTabs PT2 client (KSA, UAE, Egypt and other regions) |
+| `@bawabajs/payfort` | Amazon Payment Services (formerly PayFort) client |
+| `@bawabajs/tap` | Tap Payments client (Gulf and Egypt) |
+| `@bawabajs/testing` | Fixtures and test signers for your own tests |
 
 ## Documentation
 

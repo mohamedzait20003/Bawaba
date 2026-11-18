@@ -1,5 +1,5 @@
-import { GATEWAY, VERSION } from "@bawaba/payfort";
-import { GATEWAY as WEBHOOKS_GATEWAY } from "@bawaba/payfort/webhooks";
+import { GATEWAY, VERSION } from "@bawabajs/payfort";
+import { GATEWAY as WEBHOOKS_GATEWAY } from "@bawabajs/payfort/webhooks";
 import { expect, it } from "vitest";
 
 it("exports VERSION and GATEWAY from the main entry", () => {

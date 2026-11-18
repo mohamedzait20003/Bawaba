@@ -1,4 +1,4 @@
-import { VERSION } from "@bawaba/testing";
+import { VERSION } from "@bawabajs/testing";
 import { expect, it } from "vitest";
 
 it("exports VERSION", () => {

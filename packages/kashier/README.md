@@ -1,4 +1,4 @@
-# @bawaba/kashier
+# @bawabajs/kashier
 
 A client for the Kashier API (Egypt), part of [Bawaba](../../README.md). It uses Kashier's own field names and works without the `bawaba` facade.
 
@@ -10,8 +10,8 @@ A client for the Kashier API (Egypt), part of [Bawaba](../../README.md). It uses
 
 | Entry | Purpose |
 |---|---|
-| `@bawaba/kashier` | The client |
-| `@bawaba/kashier/webhooks` | Webhook verifiers, usable without a client instance |
+| `@bawabajs/kashier` | The client |
+| `@bawabajs/kashier/webhooks` | Webhook verifiers, usable without a client instance |
 
 ## Specification
 

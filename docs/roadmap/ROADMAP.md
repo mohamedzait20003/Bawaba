@@ -36,15 +36,15 @@ With Claude Code, writing the code is no longer the bottleneck. Drafting the cor
 | Day | Build (with Claude Code) | In parallel (only the lead can do these) |
 |---|---|---|
 | **1** | Toolchain spike and full scaffold (section 3); CI green | Create the project email and the npm org; the GitHub repository lives under the lead's own account until contributors join. **Request sandbox access from all seven gateways and contact their partner teams.** |
-| **2** | `@bawaba/core`: request pipeline, retry and no-retry policy, errors with `code`, `Money` and `Currency`, crypto (SHA-256/512, HMAC, hex/base64, constant-time compare) | Review every core file; chase sandbox replies |
-| **3** | `@bawaba/core`: idempotency store, capability levels, webhook input helpers, redaction, conformance suite. `@bawaba/testing` skeleton. Webhook receiver and fixture recorder/scrubber in `tools/`. | Deploy the webhook receiver; register its URL in every sandbox that exists |
-| **4** | `@bawaba/fawry` (the most unusual; it shapes the core) | Validate any sandbox that has arrived |
-| **5** | `@bawaba/payfort` (Amazon Payment Services: form POST, phrase-wrapped hash) | Same |
-| **6** | `@bawaba/paymob` | Paymob validation if the keys exist: capture transaction, redirect and token callbacks |
-| **7** | `@bawaba/kashier` | Kashier validation: decide the primary checkout flow |
-| **8** | `@bawaba/geidea` | Settle the timestamp format against a real session, if credentials exist |
-| **9** | `@bawaba/paytabs` | Confirm the regional host and auth header against a real test profile |
-| **10** | `@bawaba/tap` | Prove `reference.idempotent` replay in the Tap sandbox |
+| **2** | `@bawabajs/core`: request pipeline, retry and no-retry policy, errors with `code`, `Money` and `Currency`, crypto (SHA-256/512, HMAC, hex/base64, constant-time compare) | Review every core file; chase sandbox replies |
+| **3** | `@bawabajs/core`: idempotency store, capability levels, webhook input helpers, redaction, conformance suite. `@bawabajs/testing` skeleton. Webhook receiver and fixture recorder/scrubber in `tools/`. | Deploy the webhook receiver; register its URL in every sandbox that exists |
+| **4** | `@bawabajs/fawry` (the most unusual; it shapes the core) | Validate any sandbox that has arrived |
+| **5** | `@bawabajs/payfort` (Amazon Payment Services: form POST, phrase-wrapped hash) | Same |
+| **6** | `@bawabajs/paymob` | Paymob validation if the keys exist: capture transaction, redirect and token callbacks |
+| **7** | `@bawabajs/kashier` | Kashier validation: decide the primary checkout flow |
+| **8** | `@bawabajs/geidea` | Settle the timestamp format against a real session, if credentials exist |
+| **9** | `@bawabajs/paytabs` | Confirm the regional host and auth header against a real test profile |
+| **10** | `@bawabajs/tap` | Prove `reference.idempotent` replay in the Tap sandbox |
 | **11** | `bawaba` facade: types from the real overlap, four result kinds, statuses, dedupe keys, `webhooks.verify/inspect` | Paper design check: does Stripe fit the facade types? |
 | **12** | Facade finish; `examples/minimal`; per-package READMEs with the capability table and the unofficial notice | Re-run the conformance suite across all seven |
 | **13** | Hardening: `/code-review` on each package; fix the findings; secret scan; confirm there are no `node:` imports and no retried mutations | Line-by-line review of all seven verifiers |
@@ -65,7 +65,7 @@ The full rules are in [.claude/CLAUDE.md](../../.claude/CLAUDE.md). In short:
 
 ### 3.1 Toolchain spike
 
-Prove the build on the first package (`@bawaba/core`, commit 8) before copying it to the others. Nothing is committed until its check passes. Record the results in TECHNICAL_SPECIFICATIONS §8 (commit 27).
+Prove the build on the first package (`@bawabajs/core`, commit 8) before copying it to the others. Nothing is committed until its check passes. Record the results in TECHNICAL_SPECIFICATIONS §8 (commit 27).
 
 | # | Check | Pass condition |
 |---|---|---|
@@ -92,7 +92,7 @@ If A4 fails, fall back to tsup 9, or emit declarations with `tsc` and bundle the
 ### 3.3 Account actions (the lead)
 
 - Create the project email address that every gateway account is registered under (8.1).
-- Create the `@bawaba` npm org (with 2FA enforced). The repository lives under the lead's own GitHub account (`mohamedzait20003/Bawaba`) until contributors join; then it moves to a `bawaba` GitHub org (GitHub redirects the old URL).
+- Create the `@bawabajs` npm org (with 2FA enforced). The repository lives under the lead's own GitHub account (`mohamedzait20003/Bawaba`) until contributors join; then it moves to a `bawaba` GitHub org (GitHub redirects the old URL).
 - Request sandbox or test access from all seven gateways, and contact each one's partner or developer-relations team.
 
 ### 3.4 Day-1 commit plan
@@ -115,9 +115,9 @@ The target tree and file contents are in TECHNICAL_SPECIFICATIONS §7–§11.
 | 5 | `build: set up pnpm workspace with pinned toolchain` | Root `package.json` (`packageManager: pnpm@12.21.0`), `pnpm-workspace.yaml` (catalog, `strictPeerDependencies`), `pnpm-lock.yaml` | A1, A2: `pnpm install --frozen-lockfile` passes |
 | 6 | `build: add TypeScript and Biome configuration` | `tsconfig.base.json`, root `tsconfig.json`, `biome.json` | `pnpm lint` passes |
 | 7 | `test: configure Vitest projects` | `vitest.config.ts` | `pnpm test` runs, with no projects yet |
-| 8 | `feat(core): scaffold @bawaba/core` | `packages/core` with `.` and `./conformance` | A3–A6: build, `publint`, `attw`, typecheck and tests pass |
-| 9 | `feat(testing): scaffold @bawaba/testing` | `packages/testing` | Same checks |
-| 10–16 | `feat(<gateway>): scaffold @bawaba/<gateway>`, one commit each for paymob, kashier, fawry, geidea, paytabs, payfort and tap | `packages/<gateway>` with `.` and `./webhooks` | Same checks |
+| 8 | `feat(core): scaffold @bawabajs/core` | `packages/core` with `.` and `./conformance` | A3–A6: build, `publint`, `attw`, typecheck and tests pass |
+| 9 | `feat(testing): scaffold @bawabajs/testing` | `packages/testing` | Same checks |
+| 10–16 | `feat(<gateway>): scaffold @bawabajs/<gateway>`, one commit each for paymob, kashier, fawry, geidea, paytabs, payfort and tap | `packages/<gateway>` with `.` and `./webhooks` | Same checks |
 | 17 | `feat(bawaba): scaffold the facade with gateway subpaths` | `packages/bawaba` with `.` plus seven subpaths | Same checks, for all ten packages |
 | 18 | `build: add dependency guard` | `scripts/check-deps.mjs` | Passes, and fails on a forbidden dependency or a `node:` import added on purpose |
 | 19 | `build: add secret scanner` | `scripts/check-no-secrets.mjs` | Passes, and fails on a fake live key added on purpose |
@@ -146,10 +146,10 @@ Status on 17 November 2026, after the day-1 commits:
 - [x] The lockfile is committed, and pnpm is pinned through `packageManager`.
 - [x] The GitHub repository exists (`mohamedzait20003/Bawaba`, the lead's own account) and `main` is pushed.
 - [ ] `main` is protected by a ruleset, and the `npm-publish` environment and repository variables exist *(the lead; TECHNICAL_SPECIFICATIONS §11)*.
-- [ ] The `@bawaba` npm org exists *(the lead)*.
+- [x] The `@bawabajs` npm org exists *(created 18 November 2026; the `bawaba` scope was taken, decision D8)*.
 - [ ] Sandbox requests have been sent to all seven gateways *(the lead)*.
 
-## 4. Day 2: `@bawaba/core` foundations
+## 4. Day 2: `@bawabajs/core` foundations
 
 **Goal:** the half of core that every gateway client needs first: errors, money, encoding, crypto and the request pipeline with its retry rules (TECHNICAL_SPECIFICATIONS §3.1–§3.6). Day 3 adds idempotency, capabilities, webhook input helpers, redaction and the conformance suite.
 
@@ -179,7 +179,7 @@ Status on 17 November 2026, after the day-1 commits:
 | 5 | `feat(core): add the request pipeline` | `src/http/request.ts`: an injectable `fetch`; per-attempt timeout via `AbortSignal.timeout` combined with the caller's signal through `AbortSignal.any`; URI-encoded path parameters; query strings; JSON and form bodies; default and custom headers; `onRequest`/`onResponse` hooks (method, URL without the query, status, duration; never bodies); response parsing (JSON, text, or empty); `requestId` taken from a configurable header list; non-2xx statuses mapped to `ApiError` subclasses | A fake `fetch` records every request; path injection is encoded; hooks never see bodies or headers; the caller's abort is respected; a timeout fires; status mapping for 400/401/403/404/429/5xx. One MSW test covers the real-`fetch` path. |
 | 6 | `feat(core): enforce read retries and the no-retry rule for mutations` | `src/http/retry.ts`: the TECHNICAL_SPECIFICATIONS §3.2 table. Reads retry at most twice on network errors, 5xx and 429, with exponential backoff and full jitter, and honour `Retry-After` (capped). **Mutations never retry:** a timeout, network error or 5xx gives `OutcomeUnknownError`; a 4xx gives the definite `ApiError`. Clock, sleep and random are injectable for tests. | The full table: **a 5xx on a mutation makes exactly one `fetch` call and throws `OutcomeUnknownError`**; the same for a timeout and a network error; 429 on a mutation is not retried; a read retries twice then throws; `Retry-After` is respected; the jitter stays within its bounds |
 | 7 | `test(core): enforce coverage for the core foundations` | Coverage thresholds of 100% for lines and branches on the new core files in `vitest.config.ts`; `pnpm run ci` runs the tests with `--coverage` | The CI pipeline fails below the threshold |
-| 8 | `docs: record Day 2 decisions` | TECHNICAL_SPECIFICATIONS §3 and PRODUCT_SPECIFICATIONS §4 updated with the exact names chosen; GEN-01 notes (how "never sent" is detected); a changeset for `@bawaba/core` (`minor`) | — |
+| 8 | `docs: record Day 2 decisions` | TECHNICAL_SPECIFICATIONS §3 and PRODUCT_SPECIFICATIONS §4 updated with the exact names chosen; GEN-01 notes (how "never sent" is detected); a changeset for `@bawabajs/core` (`minor`) | — |
 
 ### 4.4 Decisions to settle during the day
 
@@ -194,7 +194,7 @@ Record them in commit 8.
 ### 4.5 In parallel (the lead)
 
 - Review every core file in the PR, line by line, with extra care on commits 4 and 6.
-- Chase sandbox replies, and create the `@bawaba` npm org.
+- Chase sandbox replies, and create the `@bawabajs` npm org.
 
 ### 4.6 Day-2 definition of done
 
@@ -263,7 +263,7 @@ Milestone 0 decides **what ships as `supported` and what ships as `beta`**.
 
 | Element | Detail |
 |---|---|
-| Tasks | The scaffold (section 3); `@bawaba/core` in full (TECHNICAL_SPECIFICATIONS §3); the `@bawaba/testing` skeleton; the validation tooling in `tools/` |
+| Tasks | The scaffold (section 3); `@bawabajs/core` in full (TECHNICAL_SPECIFICATIONS §3); the `@bawabajs/testing` skeleton; the validation tooling in `tools/` |
 | Acceptance | Core has full unit coverage of: the retry and no-retry paths, **including a 5xx on a mutation, which yields `OutcomeUnknownError` and keeps the idempotency claim**; idempotent replay, and rejection of a reused key with different parameters; error mapping; money conversion for 2- and 3-decimal currencies; the constant-time compare; every hash and encoding combination the seven gateways need. No secret appears in any log or error. `publint` and `attw` pass. |
 
 ### Milestone 2: All seven gateway clients (days 4–10)
@@ -292,8 +292,8 @@ Milestone 0 decides **what ships as `supported` and what ships as `beta`**.
 
 | Element | Detail |
 |---|---|
-| Tasks | `@bawaba/express`, `@bawaba/nestjs` (a module with a raw-body-aware webhook guard) and `@bawaba/next` (route-handler helpers); runnable examples; a docs site (Astro Starlight or VitePress); issue templates; outreach to each gateway's developer relations and to developer communities in Egypt and the Gulf |
-| Candidates | Paymob subscriptions and QuickLinks; Kashier payment links and saved cards; more gateways by demand (MyFatoorah, Moyasar, HyperPay, Checkout.com); a facade-only `@bawaba/stripe` |
+| Tasks | `@bawabajs/express`, `@bawabajs/nestjs` (a module with a raw-body-aware webhook guard) and `@bawabajs/next` (route-handler helpers); runnable examples; a docs site (Astro Starlight or VitePress); issue templates; outreach to each gateway's developer relations and to developer communities in Egypt and the Gulf |
+| Candidates | Paymob subscriptions and QuickLinks; Kashier payment links and saved cards; more gateways by demand (MyFatoorah, Moyasar, HyperPay, Checkout.com); a facade-only `@bawabajs/stripe` |
 
 ## 6. After day 14: the path to 1.0
 
@@ -407,10 +407,11 @@ After day 14, the new developers' main work is **validation and hardening** (cap
 | — | Two weeks to `0.1.0` on `next`; `1.0.0` after validation and review | 17 Nov 2026 |
 | — | Stripe: not in scope; possibly a facade-only adapter after 1.0 | 17 Nov 2026 |
 | D1 | Lint and format: **Biome** (one dependency, fast; revisit for the NestJS and Next.js adapters) | 17 Nov 2026 |
-| D3 | Fixture source of truth: **root `fixtures/`**, copied into `@bawaba/testing` at build time | 17 Nov 2026 |
-| D4 | `@bawaba/testing` depends on **core only**, with signers re-implemented independently from the docs | 17 Nov 2026 |
+| D3 | Fixture source of truth: **root `fixtures/`**, copied into `@bawabajs/testing` at build time | 17 Nov 2026 |
+| D4 | `@bawabajs/testing` depends on **core only**, with signers re-implemented independently from the docs | 17 Nov 2026 |
 | D5 | attw profile: **`--profile node16`** (confirm in spike A5) | 17 Nov 2026 |
 | D6 | Licence: **MIT** (8.2) | 17 Nov 2026 |
+| D8 | npm scope: **`@bawabajs`**, because another account holds `bawaba`. The unscoped facade stays `bawaba`. | 18 Nov 2026 |
 
 ### 9.2 Proposed, awaiting confirmation
 
@@ -433,7 +434,7 @@ After day 14, the new developers' main work is **validation and hardening** (cap
 | 2 | **API drift ×7.** No gateway versions its API. | Nightly contract tests per gateway, the conformance suite, tolerant types, the public validation log |
 | 3 | **Maintainer load.** Seven gateways for one maintainer. | Claude Code for drafting; ownership by signature family when developers join; `CODEOWNERS`; the conformance suite; the `beta` fallback, so one slow gateway never blocks a release |
 | 4 | **Sandbox and documentation access.** Fawry is mostly Secondary today; PayTabs' region details didn't load; onboarding at Geidea and Amazon Payment Services goes through their teams. | Request all access on day 1; no client leaves `beta` without official pages and real fixtures |
-| 5 | **Silent signature errors**, the worst failure possible, across five signature families | Test vectors from the gateways, never self-generated; independent signers in `@bawaba/testing`; `supported` only with captured fixtures; human line-by-line review |
+| 5 | **Silent signature errors**, the worst failure possible, across five signature families | Test vectors from the gateways, never self-generated; independent signers in `@bawabajs/testing`; `supported` only with captured fixtures; human line-by-line review |
 | 6 | **AI-generated code that looks right but isn't** | The rules in `.claude/CLAUDE.md`; spec-first development; small PRs; `/code-review` and `/security-review`; an outside reviewer before 1.0 |
 | 7 | **A leaky unified abstraction** (four checkout shapes, seven status models) | Facade built after all clients exist; `raw` on every result; escape hatch to the native client; the Stripe paper check |
 | 8 | **Scope creep toward orchestration** | Routing and failover stay out of scope (PRODUCT_REQUIREMENTS §3) |

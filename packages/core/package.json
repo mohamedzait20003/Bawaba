@@ -1,5 +1,5 @@
 {
-  "name": "@bawaba/core",
+  "name": "@bawabajs/core",
   "version": "0.0.0",
   "description": "Core of Bawaba: request pipeline, errors, money, crypto and idempotency. Unofficial. Not affiliated with Paymob, Kashier, Fawry, Geidea, PayTabs, Amazon Payment Services or Tap Payments.",
   "license": "MIT",
@@ -10,7 +10,7 @@
   "sideEffects": false,
   "exports": {
     ".": {
-      "@bawaba/source": "./src/index.ts",
+      "@bawabajs/source": "./src/index.ts",
       "import": {
         "types": "./dist/index.d.ts",
         "default": "./dist/index.js"
@@ -21,7 +21,7 @@
       }
     },
     "./conformance": {
-      "@bawaba/source": "./src/conformance.ts",
+      "@bawabajs/source": "./src/conformance.ts",
       "import": {
         "types": "./dist/conformance.d.ts",
         "default": "./dist/conformance.js"
