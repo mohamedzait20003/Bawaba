@@ -1,4 +1,4 @@
-# @bawaba/tap
+# @bawabajs/tap
 
 A client for the Tap Payments API (Gulf and Egypt), part of [Bawaba](../../README.md). It uses Tap Payments's own field names and works without the `bawaba` facade.
 
@@ -10,8 +10,8 @@ A client for the Tap Payments API (Gulf and Egypt), part of [Bawaba](../../READM
 
 | Entry | Purpose |
 |---|---|
-| `@bawaba/tap` | The client |
-| `@bawaba/tap/webhooks` | Webhook verifiers, usable without a client instance |
+| `@bawabajs/tap` | The client |
+| `@bawabajs/tap/webhooks` | Webhook verifiers, usable without a client instance |
 
 ## Specification
 

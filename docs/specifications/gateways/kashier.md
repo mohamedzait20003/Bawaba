@@ -1,6 +1,6 @@
 # Kashier: gateway specification
 
-*Package `@bawaba/kashier`. Last updated 17 November 2026.*
+*Package `@bawabajs/kashier`. Last updated 17 November 2026.*
 
 **Validation status:** no Bawaba sandbox yet, so every operation is `beta`.
 
@@ -8,7 +8,7 @@
 - **developers.kashier.io:** read 16 November 2026 (Verified).
 - **Sarraf's implementation** (commit `9e4bc8f`): Secondary. Sarraf ran it against **the real Kashier sandbox** on 21 October 2026, which makes it the strongest secondary source of the three Egyptian gateways.
 
-This file is the source of truth for `@bawaba/kashier`. When a sandbox contradicts it, update this file first, then the code, then `docs/validation-log.md`. The labels are defined in [PRODUCT_REQUIREMENTS](../../requirements/PRODUCT_REQUIREMENTS.md).
+This file is the source of truth for `@bawabajs/kashier`. When a sandbox contradicts it, update this file first, then the code, then `docs/validation-log.md`. The labels are defined in [PRODUCT_REQUIREMENTS](../../requirements/PRODUCT_REQUIREMENTS.md).
 
 ---
 

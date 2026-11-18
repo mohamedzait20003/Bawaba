@@ -1,4 +1,4 @@
-# @bawaba/geidea
+# @bawabajs/geidea
 
 A client for the Geidea payment gateway API (Egypt, KSA, UAE), part of [Bawaba](../../README.md). It uses Geidea's own field names and works without the `bawaba` facade.
 
@@ -10,8 +10,8 @@ A client for the Geidea payment gateway API (Egypt, KSA, UAE), part of [Bawaba](
 
 | Entry | Purpose |
 |---|---|
-| `@bawaba/geidea` | The client |
-| `@bawaba/geidea/webhooks` | Webhook verifiers, usable without a client instance |
+| `@bawabajs/geidea` | The client |
+| `@bawabajs/geidea/webhooks` | Webhook verifiers, usable without a client instance |
 
 ## Specification
 

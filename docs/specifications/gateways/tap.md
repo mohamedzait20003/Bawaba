@@ -1,13 +1,13 @@
 # Tap Payments: gateway specification
 
-*Package `@bawaba/tap`. Last updated 17 November 2026.*
+*Package `@bawabajs/tap`. Last updated 17 November 2026.*
 
 **Validation status:** no sandbox yet, so every operation is `beta`.
 
 **Sources:**
 - **developers.tap.company:** read 17 November 2026 (Verified unless marked).
 
-This file is the source of truth for `@bawaba/tap`. When a sandbox contradicts it, update this file first, then the code, then `docs/validation-log.md`. The labels are defined in [PRODUCT_REQUIREMENTS](../../requirements/PRODUCT_REQUIREMENTS.md).
+This file is the source of truth for `@bawabajs/tap`. When a sandbox contradicts it, update this file first, then the code, then `docs/validation-log.md`. The labels are defined in [PRODUCT_REQUIREMENTS](../../requirements/PRODUCT_REQUIREMENTS.md).
 
 ---
 

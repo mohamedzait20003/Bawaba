@@ -1,4 +1,4 @@
-# @bawaba/payfort
+# @bawabajs/payfort
 
 A client for the Amazon Payment Services (formerly PayFort) API, part of [Bawaba](../../README.md). It uses Amazon Payment Services's own field names and works without the `bawaba` facade.
 
@@ -10,8 +10,8 @@ A client for the Amazon Payment Services (formerly PayFort) API, part of [Bawaba
 
 | Entry | Purpose |
 |---|---|
-| `@bawaba/payfort` | The client |
-| `@bawaba/payfort/webhooks` | Webhook verifiers, usable without a client instance |
+| `@bawabajs/payfort` | The client |
+| `@bawabajs/payfort/webhooks` | Webhook verifiers, usable without a client instance |
 
 ## Specification
 

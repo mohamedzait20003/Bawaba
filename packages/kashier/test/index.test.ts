@@ -1,5 +1,5 @@
-import { GATEWAY, VERSION } from "@bawaba/kashier";
-import { GATEWAY as WEBHOOKS_GATEWAY } from "@bawaba/kashier/webhooks";
+import { GATEWAY, VERSION } from "@bawabajs/kashier";
+import { GATEWAY as WEBHOOKS_GATEWAY } from "@bawabajs/kashier/webhooks";
 import { expect, it } from "vitest";
 
 it("exports VERSION and GATEWAY from the main entry", () => {

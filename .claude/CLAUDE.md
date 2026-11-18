@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Bawaba (بوابة, "gateway") is an open-source, zero-dependency TypeScript SDK for seven payment gateways in Egypt and the Gulf: Paymob, Kashier, Fawry, Geidea, PayTabs, Amazon Payment Services (formerly PayFort; package `@bawaba/payfort`) and Tap Payments. It is unofficial and not affiliated with any of them.
+Bawaba (بوابة, "gateway") is an open-source, zero-dependency TypeScript SDK for seven payment gateways in Egypt and the Gulf: Paymob, Kashier, Fawry, Geidea, PayTabs, Amazon Payment Services (formerly PayFort; package `@bawabajs/payfort`) and Tap Payments. It is unofficial and not affiliated with any of them.
 
 **Status:** pre-scaffold, with no code yet. The current plan is the two-week build in [ROADMAP.md](../docs/roadmap/ROADMAP.md) §2.
 
@@ -21,9 +21,9 @@ Read the relevant section before changing anything. When the docs and the code d
 
 ## Non-negotiable rules
 
-1. **Zero runtime dependencies** in `@bawaba/core`, the gateway packages and `bawaba`. The only exception is core's `./conformance` subpath, which has Vitest as an optional peer. Adapters list their framework as a peer dependency only.
+1. **Zero runtime dependencies** in `@bawabajs/core`, the gateway packages and `bawaba`. The only exception is core's `./conformance` subpath, which has Vitest as an optional peer. Adapters list their framework as a peer dependency only.
 2. **No `node:` imports or Node built-ins** in core, the gateways or the facade. Use only global `fetch`, Web Crypto (`crypto.subtle`) and `TextEncoder`. The constant-time compare is an XOR over decoded bytes.
-3. **Dependency direction:** core ← gateways ← `bawaba` ← adapters. Gateway packages never import each other. `@bawaba/testing` depends on core only.
+3. **Dependency direction:** core ← gateways ← `bawaba` ← adapters. Gateway packages never import each other. `@bawabajs/testing` depends on core only.
 4. **Wire-format field names** inside gateway clients. Never rename gateway fields, and never drop unknown ones.
 5. **Webhooks:**
    - verifiers take the raw body (`string | Uint8Array`);
@@ -44,7 +44,7 @@ Read the relevant section before changing anything. When the docs and the code d
 ## How to work
 
 - **One gateway per session, branch and pull request.** Read `docs/specifications/gateways/<gateway>.md` in full before touching its package. Work through its "Test vectors" and "Traps" sections first.
-- **Test vectors first.** Write each verifier's test from a value the gateway provided (a documentation example or a captured callback) before implementing it. Never generate both the signature code and its expected values yourself. If no gateway-provided vector exists, write the test against a `@bawaba/testing` signer, mark the capability `beta`, and add a register entry.
+- **Test vectors first.** Write each verifier's test from a value the gateway provided (a documentation example or a captured callback) before implementing it. Never generate both the signature code and its expected values yourself. If no gateway-provided vector exists, write the test against a `@bawabajs/testing` signer, mark the capability `beta`, and add a register entry.
 - **Proof travels with the code.** Commit the validation evidence (scrubbed fixture, validation-log entry, register update) in the same PR as the code it proves.
 - **Reviews:** run `/code-review` before merging each PR, and `/security-review` before publishing. A human reads every verifier and every money-moving method line by line.
 - **Fact labels:** use Verified (with a date), Secondary, Uncertain and Proposal in the docs, as defined in PRODUCT_REQUIREMENTS.

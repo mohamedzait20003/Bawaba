@@ -1,6 +1,6 @@
 # PayTabs: gateway specification
 
-*Package `@bawaba/paytabs` (the PT2 API). Last updated 17 November 2026.*
+*Package `@bawabajs/paytabs` (the PT2 API). Last updated 17 November 2026.*
 
 **Validation status:** no sandbox yet, so every operation is `beta`.
 
@@ -8,7 +8,7 @@
 - **support.paytabs.com:** read 17 November 2026 (Verified unless marked).
 - **Regional hosts:** from third-party module docs (Secondary).
 
-This file is the source of truth for `@bawaba/paytabs`. When a sandbox contradicts it, update this file first, then the code, then `docs/validation-log.md`. The labels are defined in [PRODUCT_REQUIREMENTS](../../requirements/PRODUCT_REQUIREMENTS.md).
+This file is the source of truth for `@bawabajs/paytabs`. When a sandbox contradicts it, update this file first, then the code, then `docs/validation-log.md`. The labels are defined in [PRODUCT_REQUIREMENTS](../../requirements/PRODUCT_REQUIREMENTS.md).
 
 ---
 

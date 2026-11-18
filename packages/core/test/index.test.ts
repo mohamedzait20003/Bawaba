@@ -1,5 +1,5 @@
-import { VERSION } from "@bawaba/core";
-import { VERSION as CONFORMANCE_VERSION } from "@bawaba/core/conformance";
+import { VERSION } from "@bawabajs/core";
+import { VERSION as CONFORMANCE_VERSION } from "@bawabajs/core/conformance";
 import { expect, it } from "vitest";
 
 it("exports VERSION from the main entry", () => {

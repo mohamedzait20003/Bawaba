@@ -1,1 +1,1 @@
-export { GATEWAY } from "@bawaba/fawry";
+export { GATEWAY } from "@bawabajs/fawry";

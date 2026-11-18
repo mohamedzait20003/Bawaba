@@ -1,5 +1,5 @@
 {
-  "name": "@bawaba/geidea",
+  "name": "@bawabajs/geidea",
   "version": "0.0.0",
   "description": "Geidea client for Bawaba. Unofficial. Not affiliated with Paymob, Kashier, Fawry, Geidea, PayTabs, Amazon Payment Services or Tap Payments.",
   "license": "MIT",
@@ -10,7 +10,7 @@
   "sideEffects": false,
   "exports": {
     ".": {
-      "@bawaba/source": "./src/index.ts",
+      "@bawabajs/source": "./src/index.ts",
       "import": {
         "types": "./dist/index.d.ts",
         "default": "./dist/index.js"
@@ -21,7 +21,7 @@
       }
     },
     "./webhooks": {
-      "@bawaba/source": "./src/webhooks.ts",
+      "@bawabajs/source": "./src/webhooks.ts",
       "import": {
         "types": "./dist/webhooks.d.ts",
         "default": "./dist/webhooks.js"
@@ -42,10 +42,10 @@
     "check": "publint && attw --pack . --profile node16"
   },
   "dependencies": {
-    "@bawaba/core": "workspace:^"
+    "@bawabajs/core": "workspace:^"
   },
   "devDependencies": {
-    "@bawaba/testing": "workspace:^"
+    "@bawabajs/testing": "workspace:^"
   },
   "repository": {
     "type": "git",

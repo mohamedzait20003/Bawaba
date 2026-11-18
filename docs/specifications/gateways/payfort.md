@@ -1,13 +1,13 @@
 # Amazon Payment Services (formerly PayFort): gateway specification
 
-*Package `@bawaba/payfort`. Last updated 17 November 2026.*
+*Package `@bawabajs/payfort`. Last updated 17 November 2026.*
 
 **Validation status:** no sandbox yet, so every operation is `beta`.
 
 **Sources:**
 - **paymentservices.amazon.com:** read 17 November 2026 (Verified unless marked).
 
-This file is the source of truth for `@bawaba/payfort`. When a sandbox contradicts it, update this file first, then the code, then `docs/validation-log.md`. The labels are defined in [PRODUCT_REQUIREMENTS](../../requirements/PRODUCT_REQUIREMENTS.md).
+This file is the source of truth for `@bawabajs/payfort`. When a sandbox contradicts it, update this file first, then the code, then `docs/validation-log.md`. The labels are defined in [PRODUCT_REQUIREMENTS](../../requirements/PRODUCT_REQUIREMENTS.md).
 
 **Naming:** the package follows the API's host names (`*.payfort.com`). Its README calls it "a client for the Amazon Payment Services (formerly PayFort) API". Never put "amazon" in a package name, and never use the logo.
 

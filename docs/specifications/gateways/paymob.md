@@ -1,6 +1,6 @@
 # Paymob: gateway specification
 
-*Package `@bawaba/paymob`. Last updated 17 November 2026.*
+*Package `@bawabajs/paymob`. Last updated 17 November 2026.*
 
 **Validation status:** no sandbox access yet, so every operation is `beta`.
 
@@ -8,7 +8,7 @@
 - **Paymob's docs:** read 16 November 2026 (Verified).
 - **Sarraf's implementation** (commit `9e4bc8f`, synthetic fixtures only): Secondary.
 
-This file is the source of truth for `@bawaba/paymob`. When a sandbox contradicts it, update this file first, then the code, then `docs/validation-log.md`. The labels (Verified, Secondary, Uncertain, Proposal) are defined in [PRODUCT_REQUIREMENTS](../../requirements/PRODUCT_REQUIREMENTS.md).
+This file is the source of truth for `@bawabajs/paymob`. When a sandbox contradicts it, update this file first, then the code, then `docs/validation-log.md`. The labels (Verified, Secondary, Uncertain, Proposal) are defined in [PRODUCT_REQUIREMENTS](../../requirements/PRODUCT_REQUIREMENTS.md).
 
 ---
 

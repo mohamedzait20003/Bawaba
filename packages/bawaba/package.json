@@ -10,7 +10,7 @@
   "sideEffects": false,
   "exports": {
     ".": {
-      "@bawaba/source": "./src/index.ts",
+      "@bawabajs/source": "./src/index.ts",
       "import": {
         "types": "./dist/index.d.ts",
         "default": "./dist/index.js"
@@ -21,7 +21,7 @@
       }
     },
     "./paymob": {
-      "@bawaba/source": "./src/paymob.ts",
+      "@bawabajs/source": "./src/paymob.ts",
       "import": {
         "types": "./dist/paymob.d.ts",
         "default": "./dist/paymob.js"
@@ -32,7 +32,7 @@
       }
     },
     "./kashier": {
-      "@bawaba/source": "./src/kashier.ts",
+      "@bawabajs/source": "./src/kashier.ts",
       "import": {
         "types": "./dist/kashier.d.ts",
         "default": "./dist/kashier.js"
@@ -43,7 +43,7 @@
       }
     },
     "./fawry": {
-      "@bawaba/source": "./src/fawry.ts",
+      "@bawabajs/source": "./src/fawry.ts",
       "import": {
         "types": "./dist/fawry.d.ts",
         "default": "./dist/fawry.js"
@@ -54,7 +54,7 @@
       }
     },
     "./geidea": {
-      "@bawaba/source": "./src/geidea.ts",
+      "@bawabajs/source": "./src/geidea.ts",
       "import": {
         "types": "./dist/geidea.d.ts",
         "default": "./dist/geidea.js"
@@ -65,7 +65,7 @@
       }
     },
     "./paytabs": {
-      "@bawaba/source": "./src/paytabs.ts",
+      "@bawabajs/source": "./src/paytabs.ts",
       "import": {
         "types": "./dist/paytabs.d.ts",
         "default": "./dist/paytabs.js"
@@ -76,7 +76,7 @@
       }
     },
     "./payfort": {
-      "@bawaba/source": "./src/payfort.ts",
+      "@bawabajs/source": "./src/payfort.ts",
       "import": {
         "types": "./dist/payfort.d.ts",
         "default": "./dist/payfort.js"
@@ -87,7 +87,7 @@
       }
     },
     "./tap": {
-      "@bawaba/source": "./src/tap.ts",
+      "@bawabajs/source": "./src/tap.ts",
       "import": {
         "types": "./dist/tap.d.ts",
         "default": "./dist/tap.js"
@@ -108,17 +108,17 @@
     "check": "publint && attw --pack . --profile node16"
   },
   "dependencies": {
-    "@bawaba/core": "workspace:^",
-    "@bawaba/paymob": "workspace:^",
-    "@bawaba/kashier": "workspace:^",
-    "@bawaba/fawry": "workspace:^",
-    "@bawaba/geidea": "workspace:^",
-    "@bawaba/paytabs": "workspace:^",
-    "@bawaba/payfort": "workspace:^",
-    "@bawaba/tap": "workspace:^"
+    "@bawabajs/core": "workspace:^",
+    "@bawabajs/paymob": "workspace:^",
+    "@bawabajs/kashier": "workspace:^",
+    "@bawabajs/fawry": "workspace:^",
+    "@bawabajs/geidea": "workspace:^",
+    "@bawabajs/paytabs": "workspace:^",
+    "@bawabajs/payfort": "workspace:^",
+    "@bawabajs/tap": "workspace:^"
   },
   "devDependencies": {
-    "@bawaba/testing": "workspace:^"
+    "@bawabajs/testing": "workspace:^"
   },
   "repository": {
     "type": "git",

@@ -1,4 +1,4 @@
-# @bawaba/fawry
+# @bawabajs/fawry
 
 A client for the FawryPay API (Egypt), including PayAtFawry reference codes, part of [Bawaba](../../README.md). It uses Fawry's own field names and works without the `bawaba` facade.
 
@@ -10,8 +10,8 @@ A client for the FawryPay API (Egypt), including PayAtFawry reference codes, par
 
 | Entry | Purpose |
 |---|---|
-| `@bawaba/fawry` | The client |
-| `@bawaba/fawry/webhooks` | Webhook verifiers, usable without a client instance |
+| `@bawabajs/fawry` | The client |
+| `@bawabajs/fawry/webhooks` | Webhook verifiers, usable without a client instance |
 
 ## Specification
 

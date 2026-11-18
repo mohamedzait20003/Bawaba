@@ -241,32 +241,32 @@ importers:
 
   packages/bawaba:
     dependencies:
-      '@bawaba/core':
+      '@bawabajs/core':
         specifier: workspace:^
         version: link:../core
-      '@bawaba/fawry':
+      '@bawabajs/fawry':
         specifier: workspace:^
         version: link:../fawry
-      '@bawaba/geidea':
+      '@bawabajs/geidea':
         specifier: workspace:^
         version: link:../geidea
-      '@bawaba/kashier':
+      '@bawabajs/kashier':
         specifier: workspace:^
         version: link:../kashier
-      '@bawaba/payfort':
+      '@bawabajs/payfort':
         specifier: workspace:^
         version: link:../payfort
-      '@bawaba/paymob':
+      '@bawabajs/paymob':
         specifier: workspace:^
         version: link:../paymob
-      '@bawaba/paytabs':
+      '@bawabajs/paytabs':
         specifier: workspace:^
         version: link:../paytabs
-      '@bawaba/tap':
+      '@bawabajs/tap':
         specifier: workspace:^
         version: link:../tap
     devDependencies:
-      '@bawaba/testing':
+      '@bawabajs/testing':
         specifier: workspace:^
         version: link:../testing
 
@@ -278,77 +278,77 @@ importers:
 
   packages/fawry:
     dependencies:
-      '@bawaba/core':
+      '@bawabajs/core':
         specifier: workspace:^
         version: link:../core
     devDependencies:
-      '@bawaba/testing':
+      '@bawabajs/testing':
         specifier: workspace:^
         version: link:../testing
 
   packages/geidea:
     dependencies:
-      '@bawaba/core':
+      '@bawabajs/core':
         specifier: workspace:^
         version: link:../core
     devDependencies:
-      '@bawaba/testing':
+      '@bawabajs/testing':
         specifier: workspace:^
         version: link:../testing
 
   packages/kashier:
     dependencies:
-      '@bawaba/core':
+      '@bawabajs/core':
         specifier: workspace:^
         version: link:../core
     devDependencies:
-      '@bawaba/testing':
+      '@bawabajs/testing':
         specifier: workspace:^
         version: link:../testing
 
   packages/payfort:
     dependencies:
-      '@bawaba/core':
+      '@bawabajs/core':
         specifier: workspace:^
         version: link:../core
     devDependencies:
-      '@bawaba/testing':
+      '@bawabajs/testing':
         specifier: workspace:^
         version: link:../testing
 
   packages/paymob:
     dependencies:
-      '@bawaba/core':
+      '@bawabajs/core':
         specifier: workspace:^
         version: link:../core
     devDependencies:
-      '@bawaba/testing':
+      '@bawabajs/testing':
         specifier: workspace:^
         version: link:../testing
 
   packages/paytabs:
     dependencies:
-      '@bawaba/core':
+      '@bawabajs/core':
         specifier: workspace:^
         version: link:../core
     devDependencies:
-      '@bawaba/testing':
+      '@bawabajs/testing':
         specifier: workspace:^
         version: link:../testing
 
   packages/tap:
     dependencies:
-      '@bawaba/core':
+      '@bawabajs/core':
         specifier: workspace:^
         version: link:../core
     devDependencies:
-      '@bawaba/testing':
+      '@bawabajs/testing':
         specifier: workspace:^
         version: link:../testing
 
   packages/testing:
     dependencies:
-      '@bawaba/core':
+      '@bawabajs/core':
         specifier: workspace:^
         version: link:../core
 

@@ -1,6 +1,6 @@
 # Geidea: gateway specification
 
-*Package `@bawaba/geidea`. Last updated 17 November 2026.*
+*Package `@bawabajs/geidea`. Last updated 17 November 2026.*
 
 **Validation status:** no sandbox yet, so every operation is `beta`.
 
@@ -8,7 +8,7 @@
 - **docs.geidea.net:** read 17 November 2026 (Verified unless marked).
 - **No other SDK** was available to cross-check.
 
-This file is the source of truth for `@bawaba/geidea`. When a sandbox contradicts it, update this file first, then the code, then `docs/validation-log.md`. The labels are defined in [PRODUCT_REQUIREMENTS](../../requirements/PRODUCT_REQUIREMENTS.md).
+This file is the source of truth for `@bawabajs/geidea`. When a sandbox contradicts it, update this file first, then the code, then `docs/validation-log.md`. The labels are defined in [PRODUCT_REQUIREMENTS](../../requirements/PRODUCT_REQUIREMENTS.md).
 
 ---
 

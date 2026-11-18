@@ -3,7 +3,7 @@
 *Last updated 17 November 2026. Status: Proposal. No code has been written or run against any gateway.*
 
 This document says **how Bawaba is built**:
-- the architecture and the design of `@bawaba/core`;
+- the architecture and the design of `@bawabajs/core`;
 - the webhook rules;
 - the comparison across gateways (section 5). Each gateway's own facts are in its spec file under [gateways/](gateways/), which is the source of truth for that gateway's code;
 - the repository, tooling, CI and validation tooling.
@@ -40,22 +40,22 @@ The public API is in [PRODUCT_SPECIFICATIONS.md](PRODUCT_SPECIFICATIONS.md), and
                                          │ uses
    ┌─────────┬──────────┬─────────┬──────┴──┬──────────┬──────────┬────────┐
    ▼         ▼          ▼         ▼         ▼          ▼          ▼
-paymob   kashier     fawry     geidea   paytabs    payfort      tap        ← @bawaba/* gateway-native clients
+paymob   kashier     fawry     geidea   paytabs    payfort      tap        ← @bawabajs/* gateway-native clients
    └─────────┴──────────┴─────────┴────┬────┴──────────┴──────────┴────────┘
                                        ▼
-                        @bawaba/core  (pipeline, errors, money, crypto, idempotency, capabilities, redaction)
+                        @bawabajs/core  (pipeline, errors, money, crypto, idempotency, capabilities, redaction)
 
-@bawaba/testing → fixtures + independent signers (depends on core only)
-@bawaba/express | nestjs | next → thin adapters (peer-depend on the framework; after 1.0)
+@bawabajs/testing → fixtures + independent signers (depends on core only)
+@bawabajs/express | nestjs | next → thin adapters (peer-depend on the framework; after 1.0)
 ```
 
 **Dependency rules, enforced by `scripts/check-deps.mjs` (§9):**
 - **One way:** core ← gateway clients ← facade ← adapters. Gateway packages never import each other.
-- **Testing:** `@bawaba/testing` depends on core only. The gateway packages list it as a dev dependency, so there is no cycle.
-- **No runtime dependencies other than `@bawaba/*`** in core, the gateways and the facade. The one exception is core's `./conformance` subpath, which lists Vitest as an **optional** peer dependency and is used only in test code.
+- **Testing:** `@bawabajs/testing` depends on core only. The gateway packages list it as a dev dependency, so there is no cycle.
+- **No runtime dependencies other than `@bawabajs/*`** in core, the gateways and the facade. The one exception is core's `./conformance` subpath, which lists Vitest as an **optional** peer dependency and is used only in test code.
 - **No `node:` imports** in core, the gateways or the facade.
 
-## 3. `@bawaba/core`
+## 3. `@bawabajs/core`
 
 ### 3.1 Request pipeline
 
@@ -158,7 +158,7 @@ Configured secrets are registered with a redactor, and their values are replaced
 
 **What is redacted:** API keys, secret keys, HMAC secrets, Amazon Payment Services phrases, Geidea API passwords, Paymob client secrets and auth tokens, card data and billing data (names, emails, phones, addresses).
 
-### 3.10 Conformance suite (`@bawaba/core/conformance`)
+### 3.10 Conformance suite (`@bawabajs/core/conformance`)
 
 A shared Vitest suite that every client runs against itself. It checks:
 - capabilities are declared for every operation;
@@ -255,7 +255,7 @@ When `confirmWithStatusQuery` is on, `webhooks.verify` first verifies the callba
 
 ### 6.4 Tap: a native client despite the official SDK
 
-**Proposal:** build `@bawaba/tap` as a full native client, because:
+**Proposal:** build `@bawabajs/tap` as a full native client, because:
 1. the facade needs Bawaba's pipeline (the no-retry rule, idempotency claims, redaction) under every gateway;
 2. wrapping a 0.1.x SDK adds a runtime dependency and ties Bawaba to its release pace;
 3. Tap's API is the cleanest of the seven, so the client is cheap to build.
@@ -330,7 +330,7 @@ The adapter packages (`express/`, `nestjs/`, `next/`) are created after 1.0, not
 |---|---|---|
 | A1 | pnpm pinned through `packageManager` | **Pass.** pnpm 12.3.4 switched itself to 12.21.0. |
 | A2 | Catalog and settings in `pnpm-workspace.yaml` | **Pass.** `catalog:` resolves; `strictPeerDependencies` is accepted there; `pnpm install --frozen-lockfile` passes. pnpm rewrites the file on install and drops comments. |
-| A3 | TS 7 type-check | **Pass, with a changed design.** Project references and `composite` were dropped. One `noEmit` program (root `tsconfig.json`) covers `packages/*/src` and `packages/*/test`, and workspace packages resolve to their source through the `@bawaba/source` export condition (8.4). A Node global in package code fails, because `types: []` and `lib: ["es2024", "webworker"]` provide web APIs only. |
+| A3 | TS 7 type-check | **Pass, with a changed design.** Project references and `composite` were dropped. One `noEmit` program (root `tsconfig.json`) covers `packages/*/src` and `packages/*/test`, and workspace packages resolve to their source through the `@bawabajs/source` export condition (8.4). A Node global in package code fails, because `types: []` and `lib: ["es2024", "webworker"]` provide web APIs only. |
 | A4 | tsdown dual build with declarations under TS 7 | **Pass.** `index.js`, `index.cjs`, `index.d.ts` and `index.d.cts` (and the same for every subpath), from `isolatedDeclarations`. No fallback needed. |
 | A5 | `publint` and `attw --pack . --profile node16` | **Pass** for all ten packages and 25 entry points. `node10` resolution fails, as expected, and is ignored by the profile. |
 | A6 | Vitest projects | **Pass.** One project per package folder (`vitest run --project tap`), configured inline in `vitest.config.ts` because Vitest rejects an empty project list. Tests import packages by name and run against source. |
@@ -360,13 +360,13 @@ The adapter packages (`express/`, `nestjs/`, `next/`) are created after 1.0, not
 
 - **`tsconfig.base.json`:**
   - strictness: `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`, `noImplicitReturns`, `noFallthroughCasesInSwitch`, `useUnknownInCatchVariables`;
-  - modules: `module` and `moduleResolution` set to `nodenext`; `target: es2023`; `customConditions: ["@bawaba/source"]`;
+  - modules: `module` and `moduleResolution` set to `nodenext`; `target: es2023`; `customConditions: ["@bawabajs/source"]`;
   - emit: `verbatimModuleSyntax`, `isolatedModules`, `isolatedDeclarations`, `declaration`;
   - environment: `lib: ["es2024", "webworker"]` and `types: []`, which give `fetch`, `Response`, `crypto.subtle`, `TextEncoder` and `AbortSignal` but no DOM and no Node.
 - **Root `tsconfig.json`:** extends the base with `noEmit`, including every package's `src` and `test`.
 - **Package `tsconfig.json`:** extends the base with `include: ["src"]`; tsdown reads it.
 - **`scripts/tsconfig.json`:** `types: ["node"]`, `allowImportingTsExtensions` and `erasableSyntaxOnly`, so the scripts stay runnable by Node's type stripping (no enums or namespaces).
-- **The source condition:** every export carries `"@bawaba/source": "./src/<entry>.ts"` first. TypeScript and Vitest resolve it, so nothing needs building before type-checking or testing. Node, bundlers and other runtimes ignore unknown conditions and use `import` or `require`. `src/` is therefore published alongside `dist/`.
+- **The source condition:** every export carries `"@bawabajs/source": "./src/<entry>.ts"` first. TypeScript and Vitest resolve it, so nothing needs building before type-checking or testing. Node, bundlers and other runtimes ignore unknown conditions and use `import` or `require`. `src/` is therefore published alongside `dist/`.
 
 ### 8.5 Vitest and Changesets
 
@@ -375,7 +375,7 @@ The adapter packages (`express/`, `nestjs/`, `next/`) are created after 1.0, not
   - the default run includes `test/**/*.test.ts` and excludes `test/contract/`;
   - `BAWABA_CONTRACT=1` runs only `test/contract/` (used by `contract.yml`);
   - `v8` coverage over `packages/*/src`, with thresholds turned on once core is implemented.
-- **`.changeset/config.json`:** a fixed group `[["bawaba", "@bawaba/*"]]`, public access, base branch `main`. At `1.0`, the gateway packages switch to independent versions.
+- **`.changeset/config.json`:** a fixed group `[["bawaba", "@bawabajs/*"]]`, public access, base branch `main`. At `1.0`, the gateway packages switch to independent versions.
 
 ### 8.6 Package template
 
@@ -394,7 +394,7 @@ packages/<name>/
 ```jsonc
 // packages/paymob/package.json (excerpt)
 {
-  "name": "@bawaba/paymob",
+  "name": "@bawabajs/paymob",
   "version": "0.0.0",
   "description": "Paymob client for Bawaba. Unofficial. Not affiliated with Paymob, Kashier, Fawry, Geidea, PayTabs, Amazon Payment Services or Tap Payments.",
   "license": "MIT",
@@ -403,7 +403,7 @@ packages/<name>/
   "sideEffects": false,
   "exports": {
     ".": {
-      "@bawaba/source": "./src/index.ts",
+      "@bawabajs/source": "./src/index.ts",
       "import": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
       "require": { "types": "./dist/index.d.cts", "default": "./dist/index.cjs" }
     },
@@ -412,8 +412,8 @@ packages/<name>/
   },
   "files": ["dist", "src"],
   "scripts": { "build": "tsdown", "check": "publint && attw --pack . --profile node16" },
-  "dependencies": { "@bawaba/core": "workspace:^" },
-  "devDependencies": { "@bawaba/testing": "workspace:^" },
+  "dependencies": { "@bawabajs/core": "workspace:^" },
+  "devDependencies": { "@bawabajs/testing": "workspace:^" },
   "repository": { "type": "git", "url": "git+https://github.com/mohamedzait20003/Bawaba.git", "directory": "packages/paymob" },
   "publishConfig": { "access": "public", "provenance": true }
 }
@@ -421,10 +421,10 @@ packages/<name>/
 
 | Package | Entries | `dependencies` | Workspace dev dependencies |
 |---|---|---|---|
-| `@bawaba/core` | `.`, `./conformance` (optional peer: `vitest`) | none | none (`vitest` from the catalog) |
-| each of the seven gateway packages | `.`, `./webhooks` | `@bawaba/core` | `@bawaba/testing` |
-| `bawaba` | `.`, plus `./paymob` … `./tap` | core and all seven gateway packages | `@bawaba/testing` |
-| `@bawaba/testing` | `.` (one subpath per gateway later) | `@bawaba/core` | none |
+| `@bawabajs/core` | `.`, `./conformance` (optional peer: `vitest`) | none | none (`vitest` from the catalog) |
+| each of the seven gateway packages | `.`, `./webhooks` | `@bawabajs/core` | `@bawabajs/testing` |
+| `bawaba` | `.`, plus `./paymob` … `./tap` | core and all seven gateway packages | `@bawabajs/testing` |
+| `@bawabajs/testing` | `.` (one subpath per gateway later) | `@bawabajs/core` | none |
 
 All packages start at `0.0.0`; the first changeset sets the version.
 
@@ -434,8 +434,8 @@ All scripts are TypeScript (`scripts/*.ts`), type-checked with `scripts/tsconfig
 
 - **`scripts/check-deps.ts`** fails when:
   - a gateway package depends on another gateway package (in any dependency field);
-  - core, a gateway package or the facade declares a runtime or peer dependency outside `@bawaba/*`, other than core's optional Vitest peer;
-  - `@bawaba/testing` depends on anything other than core, or a gateway package on anything internal other than core;
+  - core, a gateway package or the facade declares a runtime or peer dependency outside `@bawabajs/*`, other than core's optional Vitest peer;
+  - `@bawabajs/testing` depends on anything other than core, or a gateway package on anything internal other than core;
   - any source file in core, a gateway package or the facade imports a `node:` module or a bare Node built-in;
   - a package lacks `"license": "MIT"`, `sideEffects: false`, or the unofficial notice in its `description` or README.
 
@@ -454,7 +454,7 @@ All scripts are TypeScript (`scripts/*.ts`), type-checked with `scripts/tsconfig
 
 - **Location and rules:** root `fixtures/<gateway>/` is the single source of truth (decision D3). The format, scrubbing rules, proof rule and third-party rule are in [fixtures/README.md](../../fixtures/README.md).
 - **Bytes:** files there are kept byte-exact (`.gitattributes`: `fixtures/** -text`), because signatures cover exact bytes.
-- **Packaging:** `@bawaba/testing` copies the fixtures into its `dist/` at build time, so nothing is committed twice.
+- **Packaging:** `@bawabajs/testing` copies the fixtures into its `dist/` at build time, so nothing is committed twice.
 - **Proof rule:** only `source: "sandbox"` fixtures can move a capability from `beta` to `supported`.
 
 ## 11. CI/CD and repository settings
@@ -480,7 +480,7 @@ All scripts are TypeScript (`scripts/*.ts`), type-checked with `scripts/tsconfig
   - private vulnerability reporting;
   - when contributors join: move the repository to a `bawaba` org, then update `CODEOWNERS` and every package `repository.url` (npm provenance requires the URL to match the repository that publishes).
 - **npm settings:**
-  - the `@bawaba` org with 2FA enforced;
+  - the `@bawabajs` org with 2FA enforced;
   - trusted publishing (OIDC) configured **separately for each of the ten packages** (plus the three adapters later);
   - possibly a one-time `0.0.0` placeholder publish per name, if npm requires a package to exist first (GEN-02; decision D7).
 
