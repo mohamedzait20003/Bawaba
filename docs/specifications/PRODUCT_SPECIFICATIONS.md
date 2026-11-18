@@ -255,7 +255,7 @@ try {
 
 ## 4. Errors
 
-Every error extends `BawabaError` and carries a stable string `code`, because `instanceof` doesn't survive queues and logs. The names and codes below are a Proposal.
+Every error extends `BawabaError` and carries a stable string `code`, because `instanceof` doesn't survive queues and logs. The names and codes below are implemented in `@bawabajs/core` (Day 2, 18 November 2026). The one exception: when the caller aborts a **read** through its own `AbortSignal`, the SDK rethrows the caller's abort reason unchanged.
 
 | Class | `code` | When | Safe to retry |
 |---|---|---|---|
@@ -271,8 +271,11 @@ Every error extends `BawabaError` and carries a stable string `code`, because `i
 | `CapabilityError` | `capability_unsupported`, `capability_beta` | The operation is unsupported, or beta without `allowBeta` | No |
 | `IdempotencyError` | `idempotency_key_reused`, `idempotency_outcome_unknown` | The key was reused with other parameters, or is held after an unknown outcome | No |
 | `ConfigError` | `config_invalid` | Missing or invalid configuration, or secret keys in a browser | No |
+| `InvalidArgumentError` | `invalid_argument` | An invalid value passed to the SDK (money, amount text, path parameter, header), rejected **before anything is sent** | No; fix the input |
 
 - **Fields:** every `ApiError` carries `gateway`, `status`, `headers`, `requestId` (when the gateway sends one) and the raw response body.
+- **No `retryable` property** on any error. What is safe to retry is the table above, not a flag.
+- **Serialization:** `JSON.stringify(error)` gives `name`, `code` and `gateway`, plus `status` for an `ApiError`, and `operation` and `merchantReference` for an `OutcomeUnknownError`. Headers, the raw body, the cause and the message are never serialized.
 - **Failures inside a 200:** some gateways report failures in a 200 response (Amazon Payment Services `response_code`, Geidea `responseCode`). Clients map these to the right error class.
 - **Declines:** a **declined payment is a result, not an error.**
 - **Redaction:** errors never contain secrets (FR-C9).

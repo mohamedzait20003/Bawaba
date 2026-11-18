@@ -59,12 +59,15 @@ paymob   kashier     fawry     geidea   paytabs    payfort      tap        ← @
 
 ### 3.1 Request pipeline
 
-One `request()` choke point is used by every client:
-- **`fetch`:** the global one, injectable through options.
-- **Timeout:** `AbortSignal.timeout(timeoutMs)`, combined with the caller's signal through `AbortSignal.any`.
-- **Bodies:** JSON and `application/x-www-form-urlencoded`. Path parameters are URI-encoded.
-- **Options:** custom headers; `onRequest` and `onResponse` hooks that receive method, URL, status and timing, but never bodies or secrets.
-- **Operation kind:** each call declares its kind (`read` or `mutation`) and the merchant reference, if any.
+One `request(config, spec)` choke point is used by every client (`packages/core/src/http/`, built on Day 2):
+- **`config` (`HttpClientConfig`):** `gateway`, `baseUrl`, and optionally `fetch`, `timeoutMs`, `headers`, `requestIdHeaders`, `onRequest`, `onResponse` and `retry` (injectable `sleep`, `random` and `now`, for tests).
+- **`spec` (`RequestSpec`):** `method`, `path`, `kind` (`read` or `mutation`), `operation` (for example `refunds.create`), and optionally `merchantReference`, `pathParams`, `query`, `json` or `form`, `headers` and `signal`.
+- **`fetch`:** the global one, injectable through `config.fetch`.
+- **Timeout:** `AbortSignal.timeout(timeoutMs)` per attempt, **30 s by default**, combined with the caller's signal through `AbortSignal.any`.
+- **URLs:** the path must start with `/` and must not contain `?` or `#`; query parameters go in `query`, where `undefined` values are skipped. Path parameters fill `{name}` placeholders and are URI-encoded. A missing or unused parameter, and the values `""`, `.` and `..`, are rejected, so a parameter can't change the path. An invalid or non-HTTP(S) `baseUrl` is a `ConfigError`.
+- **Bodies:** JSON or `application/x-www-form-urlencoded` (not both), with the matching content type. Headers merge in this order: client defaults, the content type, per-request headers. An invalid header is rejected before sending.
+- **Responses:** the body is read as text, then parsed as JSON when possible; otherwise the text is kept, and an empty body is `undefined`. The `requestId` comes from the first header in `requestIdHeaders` (default `x-request-id`, `request-id`). A non-2xx status becomes the matching `ApiError` subclass, whose message is only `"<gateway> returned HTTP <status>"`: the body stays in `raw`, never in the message.
+- **Hooks:** `onRequest` and `onResponse` receive gateway, operation, kind, method, the URL **without its query**, the attempt number and, for responses, the status or failure kind (`timeout`, `network`, `aborted`) and the duration. They never receive bodies or headers. A hook that throws is ignored, so it can't change the outcome of a payment call.
 
 ### 3.2 Retry policy
 
@@ -76,9 +79,11 @@ One `request()` choke point is used by every client:
 | 5xx | Retry, then `GatewayServerError` | **`OutcomeUnknownError`** |
 | Timeout or network error | Retry, then `ConnectionError` | **`OutcomeUnknownError`** |
 
-- **Read retries:** at most 2, with exponential backoff and full jitter. `Retry-After` is honoured when present.
-- **`OutcomeUnknownError`** carries `gateway`, `operation` and `merchantReference`, and is never marked retryable.
-- **Known risk:** `fetch` error causes may not reliably show whether the request was sent. Unless the pipeline can prove a mutation never left the process (for example, a config error before `fetch` was called), it assumes the request was sent.
+- **Read retries:** at most 2 (`MAX_READ_RETRIES`), with exponential backoff and full jitter: retry *n* waits a random time in [0, min(5 s, 500 ms × 2^(n−1))). `Retry-After` (seconds or an HTTP date) replaces the backoff when present, **capped at 5 s**; a date in the past means no wait, and an invalid value falls back to the backoff.
+- **Other statuses:** a 3xx that reaches the pipeline is a `GatewayServerError` on a read (not retried) and an `OutcomeUnknownError` on a mutation, because only a 4xx is a definite failure.
+- **Caller abort:** on a read, the caller's own abort reason is rethrown at once, with no retry. On a mutation, an abort after sending is an `OutcomeUnknownError`.
+- **`OutcomeUnknownError`** carries `gateway`, `operation` and `merchantReference`, keeps the 5xx `ApiError` or the network error as its `cause`, and is never marked retryable.
+- **Never sent (GEN-01):** `fetch` error causes don't reliably show whether a request was sent. Only errors raised **before `fetch` is called** count as never sent: invalid input (`InvalidArgumentError`), invalid configuration (`ConfigError`) and a signal that was already aborted. Every `fetch` rejection on a mutation is an unknown outcome.
 
 ### 3.3 Idempotency
 
@@ -114,9 +119,10 @@ type ClaimResult =
 
 ### 3.4 Errors
 
-- **Hierarchy:** `BawabaError` → `ApiError` (`status`, `headers`, `requestId`, `raw`, `gateway`) with subclasses for 400, 401, 403, 404, 429 and 5xx. Beside it: `ConnectionError`, `OutcomeUnknownError`, `SignatureVerificationError`, `CapabilityError`, `IdempotencyError` and `ConfigError`.
-- **Codes:** every error has a stable `code`; the list is in PRODUCT_SPECIFICATIONS §4.
-- **Serialization:** `toJSON()` is redacted (3.9).
+- **Hierarchy:** `BawabaError` (`code`, `gateway`, `cause`) → `ApiError` (`status`, `headers`, `requestId`, `raw`) with subclasses for 400, 401, 403, 404, 429 and 5xx. Beside it: `ConnectionError`, `OutcomeUnknownError`, `SignatureVerificationError`, `CapabilityError`, `IdempotencyError`, `ConfigError` and `InvalidArgumentError`.
+- **Status mapping (`apiErrorForStatus`):** 400 and any other unlisted 4xx → `BadRequestError`; 401, 403, 404 and 429 → their classes; 5xx and anything else → `GatewayServerError`.
+- **Codes:** every error has a stable `code`; the list is in PRODUCT_SPECIFICATIONS §4. **No error has a `retryable` property** (TECHNICAL_SPECIFICATIONS §5.10).
+- **Serialization:** `toJSON()` returns `name`, `code` and `gateway`, plus `status` for an `ApiError`, and `operation` and `merchantReference` for an `OutcomeUnknownError`. It never includes `headers`, `raw`, `cause` or the message. Full redaction (3.9) arrives on Day 3.
 - **Failures inside a 200:** clients map these (Amazon Payment Services `response_code`, Geidea `responseCode`). A declined payment is a result, not an error.
 
 ### 3.5 Money
@@ -127,13 +133,19 @@ type ClaimResult =
   - 3 decimals: KWD, BHD, OMR, JOD, IQD.
 - **Per-gateway exponents:** where a gateway uses a different exponent from ISO 4217 (to confirm for IQD), the client overrides it.
 - **Conversion:** `toDecimalString()` and `fromDecimalString()` use string and `BigInt` arithmetic. They reject floats, non-integers and excess precision, and never round. Decimal strings keep trailing zeros (`"250.00"`), because some signatures depend on them.
+- **Accepted text:** plain ASCII digits with an optional fraction (`^\d+(\.\d+)?$`): no sign, exponent, spaces, separators or Arabic-Indic digits. **Excess precision includes trailing zeros**, so `"1.000"` is rejected for EGP. Amounts above `Number.MAX_SAFE_INTEGER` minor units are rejected.
+- **Validation:** `isMoney` and `assertMoney` require a non-negative safe-integer `minor` and a supported currency. Negative amounts are rejected: refunds carry a positive amount, and the operation gives the direction. Every rejection is an `InvalidArgumentError`.
+- **Exponent override:** both helpers take an optional exponent from 0 to 4, for gateways that differ from the table (GEN-03).
 
 ### 3.6 Crypto
 
 - **API:** `globalThis.crypto.subtle` only.
 - **Algorithms:** HMAC-SHA256, HMAC-SHA512, SHA-256 and SHA-512, with hex (lowercase) or base64 output.
-- **Constant-time compare:** decode both sides to bytes, return false if the lengths differ, then XOR-accumulate over every byte and compare the result to zero. Hex input is compared case-insensitively by decoding, not by string comparison.
-- **Encoding:** UTF-8 through `TextEncoder`. Raw-body input that is a `Uint8Array` is hashed as is, never re-encoded.
+- **Functions:** `sha256`, `sha512`, `hmacSha256` and `hmacSha512` take `string | Uint8Array` and an output encoding (`"hex"` by default, or `"base64"`). An empty HMAC key is rejected.
+- **Constant-time compare:** `timingSafeEqual(a, b)` returns false if the lengths differ, then XOR-accumulates over every byte and compares the result to zero. `safeEqualHex` and `safeEqualBase64` decode both sides first, so hex compares case-insensitively. They return false, and never throw, for anything that isn't a non-empty, well-formed string.
+- **Encoding:** UTF-8 through `TextEncoder`. Raw-body input that is a `Uint8Array` is hashed as is, never re-encoded (it is copied into a fresh buffer first, which also handles views into larger buffers).
+- **Byte helpers:** `toHex`/`fromHex` (lowercase output; either case accepted) and `toBase64`/`fromBase64` (standard alphabet; input must be padded; no whitespace or URL-safe characters), hand-written without `Buffer` or `btoa`.
+- **Test vectors:** the expected values come only from the standards: FIPS 180-4 examples as reproduced in RFC 6234 §8.5, RFC 4231 test cases 1–7, and RFC 4648 §10.
 
 ### 3.7 Capabilities
 
