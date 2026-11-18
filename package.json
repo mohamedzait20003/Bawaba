@@ -10,6 +10,7 @@
     "build": "pnpm -r --filter \"./packages/*\" build",
     "typecheck": "tsc -p tsconfig.json && tsc -p scripts/tsconfig.json",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "lint": "biome check .",
     "format": "biome format --write .",
@@ -18,7 +19,7 @@
     "check:secrets": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/check-no-secrets.ts",
     "smoke": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/smoke/run.ts",
     "smoke:runtime": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/smoke/runtimes.ts",
-    "ci": "pnpm lint && pnpm typecheck && pnpm check:deps && pnpm check:secrets && pnpm test && pnpm build && pnpm check:packages && pnpm smoke",
+    "ci": "pnpm lint && pnpm typecheck && pnpm check:deps && pnpm check:secrets && pnpm test:coverage && pnpm build && pnpm check:packages && pnpm smoke",
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "pnpm build && changeset publish"
