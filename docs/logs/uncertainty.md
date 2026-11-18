@@ -76,7 +76,7 @@ Labels: **Verified**, **Secondary**, **Uncertain** (see PRODUCT_REQUIREMENTS).
 | TAP-08 | Tap | Whether `x_created` means delivery or transaction time | Uncertain | [tap.md](../specifications/gateways/tap.md) validation checklist | Open | | |
 | TAP-09 | Tap | The charge `status` values | Uncertain | [tap.md](../specifications/gateways/tap.md) validation checklist | Open | | |
 | TAP-10 | Tap | Length and charset limits of `reference.idempotent` | Uncertain | [tap.md](../specifications/gateways/tap.md) validation checklist | Open | | |
-| GEN-01 | All | Whether `fetch` errors distinguish "never sent" from "sent" (affects `OutcomeUnknownError` on mutations) | Uncertain | CI run or npm docs | Open | | |
+| GEN-01 | All | Whether `fetch` errors distinguish "never sent" from "sent" (affects `OutcomeUnknownError` on mutations) | Uncertain | CI run or npm docs | Open (mitigated) | | Day 2 rule, without relying on the answer: only errors raised before `fetch` is called (invalid input, invalid config, an already-aborted signal) count as never sent; every `fetch` rejection on a mutation is `OutcomeUnknownError`. Tests: `packages/core/test/retry.test.ts` ("never sent") |
 | GEN-02 | All | The npm trusted-publishing bootstrap: whether a package must exist before a trusted publisher can be added (decision D7), and whether `changeset publish` authenticates through OIDC | Uncertain | CI run or npm docs | Open | | |
 | GEN-03 | All | IQD exponent per gateway | Uncertain | CI run or npm docs | Open | | |
 | GEN-04 | All | Whether Node 26 still accepts `--experimental-strip-types` for the TypeScript scripts | Verified | CI run | Confirmed | 2026-11-17 | CI "Node 26 (ubuntu-latest)" passed on commit b7e8fae |

@@ -199,9 +199,9 @@ Record them in commit 8.
 ### 4.6 Day-2 definition of done
 
 - [ ] The PR is merged into `main` with CI green on every check.
-- [ ] Core exports errors, money, encoding, crypto and `request()`, still with zero dependencies and no Node built-ins (`check-deps` passes).
-- [ ] Every crypto and encoding expected value cites its standard in the test name.
-- [ ] A 5xx, timeout or network error on a mutation is proven to make exactly one call and to throw `OutcomeUnknownError`.
+- [x] Core exports errors, money, encoding, crypto and `request()`, still with zero dependencies and no Node built-ins (`check-deps` passes).
+- [x] Every crypto and encoding expected value cites its standard in the test name.
+- [x] A 5xx, timeout or network error on a mutation is proven to make exactly one call and to throw `OutcomeUnknownError`.
 - [ ] `/code-review` has been run on the PR, and its findings are fixed or explained.
 
 ## 5. Milestones
