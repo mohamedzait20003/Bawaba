@@ -8,5 +8,6 @@ export type * from "./http/types.js";
 export * from "./idempotency.js";
 export * from "./money.js";
 export * from "./redaction.js";
+export * from "./webhooks.js";
 
 export const VERSION = "0.0.0";
