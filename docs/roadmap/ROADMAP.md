@@ -8,7 +8,7 @@ This document says **when and how** Bawaba gets built: the two-week schedule, th
 
 ## 1. Summary
 
-- **Who:** the lead, working **solo** and building with **Claude Code**. Up to two more developers may join later (section 7).
+- **Who:** the lead, working **solo** and building with **Claude Code**. Up to two more developers may join later (section 8).
 - **Scope:** **all seven gateways from the start**: Paymob, Kashier, Fawry, Geidea, PayTabs, Amazon Payment Services and Tap. There are no waves; no gateway is deferred or released without the others.
 - **Two-week target:** `0.1.0` of all ten packages (core, seven clients, facade, testing) on the npm **`next`** tag. Every operation not yet proven in a sandbox is marked `beta`.
 - **Then `1.0.0`:** once every gateway's verifiers are proven against real callbacks and an outside reviewer has checked the security-critical code. That depends on gateway onboarding, not on coding speed.
@@ -91,7 +91,7 @@ If A4 fails, fall back to tsup 9, or emit declarations with `tsc` and bundle the
 
 ### 3.3 Account actions (the lead)
 
-- Create the project email address that every gateway account is registered under (8.1).
+- Create the project email address that every gateway account is registered under (9.1).
 - Create the `@bawabajs` npm org (with 2FA enforced). The repository lives under the lead's own GitHub account (`mohamedzait20003/Bawaba`) until contributors join; then it moves to a `bawaba` GitHub org (GitHub redirects the old URL).
 - Request sandbox or test access from all seven gateways, and contact each one's partner or developer-relations team.
 
@@ -198,13 +198,59 @@ Record them in commit 8.
 
 ### 4.6 Day-2 definition of done
 
-- [ ] The PR is merged into `main` with CI green on every check.
+- [x] The PR is merged into `main` with CI green on every check.
 - [x] Core exports errors, money, encoding, crypto and `request()`, still with zero dependencies and no Node built-ins (`check-deps` passes).
 - [x] Every crypto and encoding expected value cites its standard in the test name.
 - [x] A 5xx, timeout or network error on a mutation is proven to make exactly one call and to throw `OutcomeUnknownError`.
 - [ ] `/code-review` has been run on the PR, and its findings are fixed or explained.
 
-## 5. Milestones
+## 5. Day 3: `@bawabajs/core` completion, testing skeleton and capture tooling
+
+**Goal:** the rest of core (TECHNICAL_SPECIFICATIONS §3.3 and §3.7–§3.10), the `@bawabajs/testing` skeleton, and the `tools/` that capture real callbacks (§12), so that Day 4 can start on Fawry with nothing missing underneath.
+
+### 5.1 How the day runs
+
+The same rules as Day 2 (4.2), on the branch `feat/core-completion`. Nothing here contains a gateway endpoint, field or signature recipe: those arrive on each gateway's day.
+
+### 5.2 Day-3 commit plan
+
+| # | Commit | Contents | Tests (written first) |
+|---|---|---|---|
+| 1 | `docs: plan Day 3 (core completion)` | This section | — |
+| 2 | `feat(core): add redaction for secrets and personal data` | `src/redaction.ts`: a `Redactor` holding the configured secrets (never shown by `toJSON`, `String` or Node's `inspect`), `redact(text)` in one pass, `redactValue(value)` that also masks sensitive keys (credentials, card and billing data); `isSensitiveKey`. `ApiError.headers` and `raw` become non-enumerable, so logging an error shows neither. The pipeline redacts the hook URL through `config.redactor`. | Each secret and its URL-encoded form replaced; overlapping secrets; a replacement is never re-matched; nested and cyclic values; every key family; `JSON.stringify`, `String` and `inspect` of a redactor and of an `ApiError` show no secret |
+| 3 | `feat(core): add capability levels and the beta gate` | `src/capabilities.ts`: `CapabilityLevel`, `defineCapabilities` (validated, frozen), `assertCapability` (beta needs `allowBeta: true`; unsupported and undeclared always throw) | Every level × `allowBeta`; an undeclared name fails closed; invalid levels rejected |
+| 4 | `feat(core): add idempotency claims with an in-memory store` | `src/idempotency.ts`: the §3.3 `IdempotencyStore` interface, `MemoryIdempotencyStore`, `stableStringify`, `fingerprint` and `runIdempotent` | Replay; reuse with other parameters; a held key; **a 5xx on a mutation keeps the claim**; a 4xx and the never-sent errors release it; a failing store never hides a successful payment |
+| 5 | `feat(core): add webhook input helpers` | `src/webhooks.ts`: `normalizeWebhookRequest` (raw body only, lowercase headers, first query values), `verifyWebhook` (verify, then parse; fails closed), `parseJsonObject`, `parseFormBody`, `requireEventType`, `pickSigned` | A parsed object instead of the raw body is refused; string and bytes give the same text; a throwing or false verifier is a `SignatureVerificationError`; the parser never runs before verification succeeds |
+| 6 | `feat(core): add the conformance suite` | `src/conformance.ts`: `runConformanceSuite(subject)` for Vitest, over check functions that return problems (capabilities, money round-trips, webhook tampering, raw-body input, mutations, leaks, `inspect`) | A well-behaved example client passes; each kind of broken client is reported |
+| 7 | `feat(testing): add the testing skeleton` | `fakeFetch` (records calls, scripted responses), `jsonResponse`, `webhookRequest`, `parseFixture` (the `fixtures/README.md` format) | Each helper; fixtures with a real-looking secret or an unknown source are rejected |
+| 8 | `feat(tools): add the webhook receiver and local capture server` | `tools/webhook-receiver/` (Cloudflare Worker with KV: stores raw callbacks, read back with a bearer token) and `tools/capture-server.ts` (local, for a tunnel) | Capture and read-back; wrong token; unknown gateway; body size limit |
+| 9 | `feat(tools): add the fixture scrubber and recorder` | `tools/fixtures/scrub.ts` (byte-preserving scrub of JSON, form and query values) and `record.ts` (writes `fixtures/<gateway>/` only when that gateway has a re-signing signer) | Names, emails, phones, addresses, cards, masked PANs, credentials and merchant IDs replaced; every other byte unchanged |
+| 10 | `test(core): enforce coverage for the core completion` | The 100% thresholds extended to the new core files | — |
+| 11 | `docs: record Day 3 decisions` | TECHNICAL_SPECIFICATIONS §3.3, §3.7–§3.10 and §12, and PRODUCT_SPECIFICATIONS §2 and §8, updated with the names chosen; changesets for core and testing | — |
+
+### 5.3 Decisions to settle during the day
+
+Record them in commit 11.
+
+- **Idempotency key:** a non-empty string of at most 255 characters (Proposal). The fingerprint covers the gateway and operation as well as the parameters, so one key can't be reused across operations.
+- **Completed records** in the memory store expire after 24 hours; held records never expire, because only `reconcile` may release them.
+- **Which errors release a claim:** a 4xx `ApiError`, and the never-sent errors (`InvalidArgumentError`, `ConfigError`, `CapabilityError`). Every other error keeps it, which is the safe side.
+- **Receiver:** a Cloudflare Worker (free tier) rather than a Vercel function, because KV gives storage with no database.
+
+### 5.4 In parallel (the lead)
+
+- Deploy the receiver (`tools/webhook-receiver/README.md`) and register its URL in the Paymob and Kashier sandboxes, then in each other sandbox as access arrives.
+- Review every core file in the PR, with extra care on commits 4 and 5.
+
+### 5.5 Day-3 definition of done
+
+- [ ] The PR is merged into `main` with CI green on every check.
+- [ ] Core exports idempotency, capabilities, webhook input helpers and redaction, and `@bawabajs/core/conformance` runs; still zero dependencies and no Node built-ins.
+- [ ] A 5xx on a mutation is proven to keep the idempotency claim (Milestone 1 acceptance).
+- [ ] The receiver is deployed and has captured at least one sandbox callback *(the lead)*.
+- [ ] `/code-review` has been run on the PR, and its findings are fixed or explained.
+
+## 6. Milestones
 
 The milestones define what each stage must achieve. The two-week schedule compresses Milestones 1–3 into days 1–12. Milestone 0 runs throughout and continues after day 14, and Milestone 4 follows day 14.
 
@@ -295,7 +341,7 @@ Milestone 0 decides **what ships as `supported` and what ships as `beta`**.
 | Tasks | `@bawabajs/express`, `@bawabajs/nestjs` (a module with a raw-body-aware webhook guard) and `@bawabajs/next` (route-handler helpers); runnable examples; a docs site (Astro Starlight or VitePress); issue templates; outreach to each gateway's developer relations and to developer communities in Egypt and the Gulf |
 | Candidates | Paymob subscriptions and QuickLinks; Kashier payment links and saved cards; more gateways by demand (MyFatoorah, Moyasar, HyperPay, Checkout.com); a facade-only `@bawabajs/stripe` |
 
-## 6. After day 14: the path to 1.0
+## 7. After day 14: the path to 1.0
 
 1. **Keep validating:** as each sandbox arrives, capture callbacks, add fixtures and lift `beta` flags in patch releases.
 2. **Track proof publicly:** keep the public status table and the validation log current.
@@ -304,9 +350,9 @@ Milestone 0 decides **what ships as `supported` and what ships as `beta`**.
 
 There is no fixed date: 1.0 waits on the slowest gateway's onboarding and on the review.
 
-## 7. Team
+## 8. Team
 
-### 7.1 Roles
+### 8.1 Roles
 
 The lead holds every role until others join.
 
@@ -325,16 +371,16 @@ The ownership areas follow the signature families, so shared helpers are written
 
 After day 14, the new developers' main work is **validation and hardening** (capturing callbacks, lifting `beta` flags, adapters, docs), not first drafts.
 
-### 7.2 Working rules
+### 8.2 Working rules
 
 - **`CODEOWNERS`:** each gateway package has an owner and a second reviewer from another track. No verifier change merges with only its author's approval.
 - **`CONTRIBUTING.md`:** contributions are licensed under MIT; the fixture-scrubbing rules; a DCO sign-off (`git commit -s`); and Conventional Commit messages (`feat(paymob): …`). There is no separate contributor licence agreement.
 - **Credentials:** nobody keeps gateway credentials on a personal machine longer than needed. CI secrets are the source of truth.
 - **Coordination:** a short weekly call, plus a GitHub Project board with one column per milestone, showing blocked sandbox requests.
 
-## 8. Prerequisites besides code
+## 9. Prerequisites besides code
 
-### 8.1 Gateway accounts
+### 9.1 Gateway accounts
 
 | Gateway | How test access is obtained | What may be needed |
 |---|---|---|
@@ -361,12 +407,12 @@ After day 14, the new developers' main work is **validation and hardening** (cap
   - at least one 3-decimal currency account (KWD or BHD).
 - **Documentation packs:** official Postman collections or PDFs, wherever the public pages are incomplete (Fawry's portal, PayTabs' region page).
 
-### 8.2 Legal and policy
+### 9.2 Legal and policy
 
 - **Licence: MIT** (decided 17 November 2026):
   - it is short, permissive and the most familiar licence on npm;
   - the copyright line is "The Bawaba contributors";
-  - contributions are accepted under the same licence ("inbound = outbound"), confirmed by the DCO sign-off on every commit (7.2);
+  - contributions are accepted under the same licence ("inbound = outbound"), confirmed by the DCO sign-off on every commit (8.2);
   - it has no explicit patent grant;
   - **no third-party code is copied.** Copying third-party data, such as Sarraf's Apache-2.0 fixtures, needs that data's licence text and attribution in `THIRD_PARTY_NOTICES.md`.
 - **Trademarks:**
@@ -385,7 +431,7 @@ After day 14, the new developers' main work is **validation and hardening** (cap
   - sandboxes only;
   - contract tests never use live keys.
 
-### 8.3 Budget
+### 9.3 Budget
 
 | Item | Cost |
 |---|---|
@@ -395,9 +441,9 @@ After day 14, the new developers' main work is **validation and hardening** (cap
 | Domain for the docs site | About US$10–20 a year |
 | Security review | Free from a trusted volunteer; otherwise a paid review before 1.0 |
 
-## 9. Decisions
+## 10. Decisions
 
-### 9.1 Settled
+### 10.1 Settled
 
 | ID | Decision | Date |
 |---|---|---|
@@ -410,23 +456,23 @@ After day 14, the new developers' main work is **validation and hardening** (cap
 | D3 | Fixture source of truth: **root `fixtures/`**, copied into `@bawabajs/testing` at build time | 17 Nov 2026 |
 | D4 | `@bawabajs/testing` depends on **core only**, with signers re-implemented independently from the docs | 17 Nov 2026 |
 | D5 | attw profile: **`--profile node16`** (confirm in spike A5) | 17 Nov 2026 |
-| D6 | Licence: **MIT** (8.2) | 17 Nov 2026 |
+| D6 | Licence: **MIT** (9.2) | 17 Nov 2026 |
 | D8 | npm scope: **`@bawabajs`**, because another account holds `bawaba`. The unscoped facade stays `bawaba`. | 18 Nov 2026 |
 
-### 9.2 Proposed, awaiting confirmation
+### 10.2 Proposed, awaiting confirmation
 
 | ID | Decision | Recommendation |
 |---|---|---|
-| — | Gateway account holder | **The lead as an individual, under a project email** (8.1) |
+| — | Gateway account holder | **The lead as an individual, under a project email** (9.1) |
 | D7 | Reserve npm names with `0.0.0` placeholders | **Yes, if** spike B2 confirms trusted publishing needs an existing package |
 
-### 9.3 Open
+### 10.3 Open
 
 1. **Partner programs:** whether to approach each gateway's partner program now. Recommended: yes, together with the sandbox requests.
 2. **Kashier's primary flow** (hosted page or Payment Sessions). Decide from the validation results.
 3. **Tap:** a native client (current plan) or a wrapper of the official SDK. Revisit in Milestone 4.
 
-## 10. Risks
+## 11. Risks
 
 | # | Risk | Mitigation |
 |---|---|---|
