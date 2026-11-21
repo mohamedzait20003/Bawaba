@@ -40,8 +40,8 @@ export default defineConfig({
       provider: "v8",
       include: ["packages/*/src/**"],
       thresholds: {
-        "packages/core/src/{errors,money,encoding,crypto}.ts": { lines: 100, branches: 100, functions: 100, statements: 100 },
-        "packages/core/src/http/**": { lines: 100, branches: 100, functions: 100, statements: 100 },
+        "packages/core/src/**": { lines: 100, branches: 100, functions: 100, statements: 100 },
+        "packages/testing/src/**": { lines: 100, branches: 100, functions: 100, statements: 100 },
       },
     },
   },
