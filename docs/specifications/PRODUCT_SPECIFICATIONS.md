@@ -1,6 +1,6 @@
 # Bawaba: product specifications
 
-*Last updated 17 November 2026. Status: Proposal. No code exists yet, so every API here is a design target and the examples are illustrative.*
+*Last updated 19 November 2026. Status: Proposal, except where a section says it is implemented. `@bawabajs/core` and the `@bawabajs/testing` skeleton exist (Days 2–3); the gateway clients and the facade don't yet, so their APIs are design targets and the examples are illustrative.*
 
 This document describes Bawaba **as developers will use it**: packages, configuration, the facade API, the gateway-native clients, errors, webhooks and the guarantees the SDK makes. The requirements behind it are in [PRODUCT_REQUIREMENTS.md](../requirements/PRODUCT_REQUIREMENTS.md). The internals and the verified gateway facts are in [TECHNICAL_SPECIFICATIONS.md](TECHNICAL_SPECIFICATIONS.md).
 
@@ -11,7 +11,7 @@ This document describes Bawaba **as developers will use it**: packages, configur
 | Package | Purpose | Entry points |
 |---|---|---|
 | `bawaba` | Unified facade; the package most users install | `.`, plus `./paymob`, `./kashier`, `./fawry`, `./geidea`, `./paytabs`, `./payfort`, `./tap` |
-| `@bawabajs/core` | Request pipeline, errors, money, crypto, idempotency, shared types | `.`, `./conformance` |
+| `@bawabajs/core` | Request pipeline, errors, money, crypto, idempotency, capabilities, webhook input helpers, redaction, shared types | `.`, `./conformance` |
 | `@bawabajs/paymob` | Full Paymob client | `.`, `./webhooks` |
 | `@bawabajs/kashier` | Full Kashier client | `.`, `./webhooks` |
 | `@bawabajs/fawry` | Full Fawry client | `.`, `./webhooks` |
@@ -49,7 +49,7 @@ type Money = { minor: number; currency: Currency }; // minor = integer minor uni
 Every operation and payment method of every gateway has a level:
 - **`supported`:** confirmed against a real sandbox and recorded in the validation log.
 - **`beta`:** implemented from the documentation but not yet confirmed. Calling it throws `CapabilityError` unless the client or facade was created with `allowBeta: true`.
-- **`unsupported`:** the gateway doesn't offer it. This is a compile-time error where the types allow it, and a `CapabilityError` at runtime otherwise.
+- **`unsupported`:** the gateway doesn't offer it. This is a compile-time error where the types allow it, and a `CapabilityError` at runtime otherwise. An operation a client never declared is treated the same way, even with `allowBeta: true`.
 
 ```typescript
 bawaba.capabilities("tap").void;   // "unsupported": Tap only schedules voids
@@ -61,10 +61,12 @@ Levels change only in releases. Lifting a `beta` flag is a patch release, with t
 ### 2.3 Idempotency keys
 
 Every money-moving call (`createPayment`, `refund`, `capture`, `void`, and their native equivalents) accepts an optional `idempotencyKey`:
+- **The key** is a string of 1 to 255 characters. Use one per operation, such as `refund:order_8731:1`.
 - **Same key, same parameters:** returns the stored result without calling the gateway again.
-- **Same key, different parameters:** throws `IdempotencyError` (`idempotency_key_reused`).
-- **After an unknown outcome** (`OutcomeUnknownError`), the key stays claimed. A retry with that key throws `IdempotencyError` (`idempotency_outcome_unknown`) until the caller reconciles and releases it.
-- **The default store is in memory**, which is per process. Apps running more than one instance must pass an `idempotencyStore` backed by Redis or their database (interface in TECHNICAL_SPECIFICATIONS §3.3).
+- **Same key, different parameters,** or the same key for another operation or gateway: throws `IdempotencyError` (`idempotency_key_reused`) before anything is sent.
+- **After an unknown outcome** (`OutcomeUnknownError`), the key stays claimed. A retry with that key throws `IdempotencyError` (`idempotency_outcome_unknown`) until the caller reconciles and releases it. Any other unexpected error keeps the claim too, because the outcome may be unknown.
+- **After a definite failure** (a 4xx from the gateway, or invalid input or configuration rejected before sending), the claim is released, so the corrected call can reuse the key.
+- **The default store is in memory**, which is per process; it keeps completed results for 24 hours. Apps running more than one instance must pass an `idempotencyStore` backed by Redis or their database (interface in TECHNICAL_SPECIFICATIONS §3.3).
 - **Tap** also receives the key as `reference.idempotent`, its server-side idempotency (24 hours), so a reconciled retry is provably safe there.
 
 ### 2.4 Trust levels: `signed` vs `raw`
@@ -368,6 +370,7 @@ const page = await paytabs.payments.request({
 
 ## 8. `@bawabajs/testing`
 
-- **Fixtures:** scrubbed callbacks and responses for each gateway. Each says whether it came from a real sandbox (`source: "sandbox"`) or was written from the docs (`source: "synthetic"`).
-- **Test signers** for each gateway, to build valid signed callbacks in the application's own tests. They are written independently of the clients, so a misreading of the docs in one doesn't hide in the other.
+- **Fixtures:** scrubbed callbacks and responses for each gateway. Each says whether it came from a real sandbox (`source: "sandbox"`) or was written from the docs (`source: "synthetic"`). `parseFixture` reads and checks one, and `fixtureRequest` gives the request to pass to a verifier.
+- **Test signers** for each gateway, to build valid signed callbacks in the application's own tests. They are written independently of the clients, so a misreading of the docs in one doesn't hide in the other. Each arrives on its gateway's build day.
+- **HTTP helpers:** `fakeFetch(...)` answers each request with the next scripted response or error, records every call, and rejects any request that wasn't scripted, so an unexpected retry fails the test. `jsonResponse` and `webhookRequest` build responses and raw webhook requests.
 - **No secrets needed:** everything works with test secrets.

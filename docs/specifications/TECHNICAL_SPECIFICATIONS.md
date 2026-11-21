@@ -1,6 +1,6 @@
 # Bawaba: technical specifications
 
-*Last updated 17 November 2026. Status: Proposal. No code has been written or run against any gateway.*
+*Last updated 19 November 2026. Status: Proposal, except where a section says it was built. `@bawabajs/core` (§3), the `@bawabajs/testing` skeleton and the validation tooling (§12) exist; no code has run against any gateway yet.*
 
 This document says **how Bawaba is built**:
 - the architecture and the design of `@bawabajs/core`;
@@ -100,20 +100,21 @@ type ClaimResult =
   | { state: "held"; fingerprint: string };                       // in flight, or the outcome is unknown
 ```
 
-**Flow for a money-moving call with an `idempotencyKey`:**
-1. **Fingerprint the parameters:** stable JSON (sorted keys, no `undefined`) → SHA-256 → hex.
-2. **`claim`** the key:
-   - `completed` with the same fingerprint → return the stored result;
-   - a different fingerprint → `IdempotencyError` (`idempotency_key_reused`);
-   - `held` → `IdempotencyError` (`idempotency_outcome_unknown`).
-3. **Send the request.**
-4. **Record the outcome:**
-   - success → `complete`;
-   - a definite failure (a 4xx) → `release`;
-   - `OutcomeUnknownError` → **keep the claim.** Only `reconcile` releases it, once it knows the true state.
+**Flow for a money-moving call with an `idempotencyKey`** (`runIdempotent(call, send)` in `src/idempotency.ts`, built on Day 3):
+1. **Check the key:** a string of 1 to 255 characters (`MAX_IDEMPOTENCY_KEY_LENGTH`, Proposal), or `InvalidArgumentError` before anything is claimed. Without a key, the call is simply sent.
+2. **Fingerprint** `{ gateway, operation, params }`: stable JSON (`stableStringify`: keys sorted by code unit, `undefined` properties dropped, `toJSON` applied once as in JSON) → SHA-256 → hex. Covering the gateway and operation means one key can't be reused across operations. Non-JSON data (NaN, `Infinity`, `bigint`, functions, symbols, bytes, `Map`, cycles) is an `InvalidArgumentError`.
+3. **`claim`** the key:
+   - a different fingerprint, whether completed or held → `IdempotencyError` (`idempotency_key_reused`);
+   - `completed` with the same fingerprint → return the stored result, without sending;
+   - `held` with the same fingerprint → `IdempotencyError` (`idempotency_outcome_unknown`).
+4. **Send the request.**
+5. **Record the outcome:**
+   - success → `complete`. If the store fails here, the result is still returned (the payment happened) and the key stays held, which is the safe side;
+   - a definite failure → `release`: a 4xx `ApiError`, or one of the never-sent errors (`InvalidArgumentError`, `ConfigError`, `CapabilityError`);
+   - `OutcomeUnknownError`, and **every other error** (a 5xx, a caller abort, a bug) → **keep the claim.** Only `reconcile` releases it, once it knows the true state.
 
 **Store and gateway mapping:**
-- **Store:** the default is an in-memory `Map`. Apps provide Redis or database stores through the interface; none is bundled.
+- **Store:** the default is `MemoryIdempotencyStore`, per process. Completed records expire after 24 hours (`COMPLETED_RECORD_TTL_MS`); held records never expire. Expired records are swept at most once a minute. Apps provide Redis or database stores through the interface; none is bundled.
 - **Tap:** the key is also sent as `reference.idempotent`. Tap's length and charset limits for that field are Uncertain.
 - **Amazon Payment Services:** refunds map the key to `maintenance_reference` once its retry behaviour is confirmed (Uncertain).
 
@@ -122,7 +123,7 @@ type ClaimResult =
 - **Hierarchy:** `BawabaError` (`code`, `gateway`, `cause`) → `ApiError` (`status`, `headers`, `requestId`, `raw`) with subclasses for 400, 401, 403, 404, 429 and 5xx. Beside it: `ConnectionError`, `OutcomeUnknownError`, `SignatureVerificationError`, `CapabilityError`, `IdempotencyError`, `ConfigError` and `InvalidArgumentError`.
 - **Status mapping (`apiErrorForStatus`):** 400 and any other unlisted 4xx → `BadRequestError`; 401, 403, 404 and 429 → their classes; 5xx and anything else → `GatewayServerError`.
 - **Codes:** every error has a stable `code`; the list is in PRODUCT_SPECIFICATIONS §4. **No error has a `retryable` property** (TECHNICAL_SPECIFICATIONS §5.10).
-- **Serialization:** `toJSON()` returns `name`, `code` and `gateway`, plus `status` for an `ApiError`, and `operation` and `merchantReference` for an `OutcomeUnknownError`. It never includes `headers`, `raw`, `cause` or the message. Full redaction (3.9) arrives on Day 3.
+- **Serialization:** `toJSON()` returns `name`, `code` and `gateway`, plus `status` for an `ApiError`, and `operation` and `merchantReference` for an `OutcomeUnknownError`. It never includes `headers`, `raw`, `cause` or the message. `ApiError.headers` and `raw` are also **non-enumerable**, so logging an error (Node's `inspect`, `console.log`) shows neither (3.9).
 - **Failures inside a 200:** clients map these (Amazon Payment Services `response_code`, Geidea `responseCode`). A declined payment is a result, not an error.
 
 ### 3.5 Money
@@ -149,37 +150,47 @@ type ClaimResult =
 
 ### 3.7 Capabilities
 
-- **Declaration:** each client declares a static `capabilities` object for every operation and payment method: `supported`, `beta` or `unsupported`.
+- **Declaration:** each client declares a static `capabilities` object for every operation and payment method: `supported`, `beta` or `unsupported`. `defineCapabilities({...})` checks every level and returns a frozen object.
 - **Where the levels come from:** the validation log. Only `source: "sandbox"` fixtures can justify `supported`.
-- **Enforcement:** a beta call without `allowBeta: true` throws `CapabilityError`, and so does an unsupported call.
-- **Status tables:** status-mapping tables are exported with a `verified` flag per row.
+- **Enforcement:** `assertCapability(capabilities, name, { allowBeta, gateway })`. A beta call without `allowBeta: true` throws `CapabilityError` (`capability_beta`). An unsupported call, and a name that was never declared, throw `CapabilityError` (`capability_unsupported`) even with `allowBeta`: undeclared fails closed.
+- **Status tables:** status-mapping tables are exported with a `verified` flag per row (facade, days 11–12).
 
 ### 3.8 Webhook input helpers
 
-- **`RawWebhookRequest`:** `{ rawBody: string | Uint8Array; headers; query }`.
-- **Normalization:** headers become lowercase keys; query parameters become a record of the first values.
-- **Parsing:** JSON and form-encoded bodies are parsed **only after** verification succeeds.
+Built on Day 3, in `src/webhooks.ts`:
+- **`RawWebhookRequest`:** `{ rawBody: string | Uint8Array; headers?; query? }`. Headers can be a `Headers` object or a record (values may be arrays, as Node gives them); the query can be a string, `URLSearchParams` or a record.
+- **`normalizeWebhookRequest(input)`** refuses anything but a string or `Uint8Array` body (`InvalidArgumentError`: a parsed body changes the signed values). It returns `rawBody` as given, `body` (UTF-8 text) and `bytes`, plus frozen, prototype-free records:
+  - headers with lowercase names; repeated values, and two spellings of one name, are joined with `", "` as `Headers` does, so an ambiguous signature header never verifies;
+  - the query with the **first** value of each parameter; non-string values (such as nested objects from a query parser) are skipped.
+- **`verifyWebhook(input, { gateway, verify, parse })`** normalizes, then calls `verify`. Anything other than `true` is a `SignatureVerificationError`; so is a `verify` that throws (the cause is kept). `parse` runs **only after** verification succeeds, and a failure there is also a `SignatureVerificationError`. A `SignatureVerificationError` thrown by either passes through unchanged.
+- **Helpers for verifiers:** `parseJsonObject` (a JSON object only), `parseFormBody` (first values), `requireEventType(value, known, gateway)` (a missing or unknown type fails closed), and `pickSigned(source, fields)`, which copies only the listed, present fields into a frozen record for `signed`.
 
 ### 3.9 Redaction
 
-Configured secrets are registered with a redactor, and their values are replaced in:
-- error messages;
-- `toJSON` output;
-- hook payloads;
-- `inspect` reports.
-
-**What is redacted:** API keys, secret keys, HMAC secrets, Amazon Payment Services phrases, Geidea API passwords, Paymob client secrets and auth tokens, card data and billing data (names, emails, phones, addresses).
+Built on Day 3, in `src/redaction.ts`:
+- **`Redactor`:** each client registers its configured secrets (`new Redactor([secretKey, hmacSecret])`). `redact(text)` replaces every secret, and its URL-encoded form, with `[redacted]` in one pass: longer secrets first, and a replacement is never matched again. The redactor never shows its secrets: `toJSON`, `String` and Node's `inspect` all give `Redactor [redacted]`.
+- **`redactValue(value)`** copies JSON-like data, redacting secrets inside strings and replacing the value of every **sensitive key** with `[redacted]`. Cycles become `[circular]`.
+- **Sensitive keys (`isSensitiveKey`):** matched after lowercasing and removing non-alphanumerics. Any key containing `secret`, `password`, `passwd`, `phrase`, `token`, `apikey`, `privatekey`, `authorization`, `cookie`, `email`, `phone`, `mobile`, `cardnumber`, `cvv`, `cvc`, `address`, `firstname`, `lastname`, `fullname`, `holdername`, `billing` or `shipping`; and the exact keys `pan`, `name`, `street`, `building`, `apartment`, `floor`, `postcode`, `postalcode`, `zip`, `zipcode`, `iban`, `nationalid`, `expiry`, `expirydate`, `expmonth` and `expyear`. This covers API keys, secret keys, HMAC secrets, Amazon Payment Services phrases, Geidea API passwords, Paymob client secrets and auth tokens, card data and billing data.
+- **Where it applies:**
+  - error messages contain only the gateway, the operation and the status, never a body (3.1);
+  - `toJSON` leaves out headers and bodies, and `ApiError.headers` and `raw` are non-enumerable (3.4);
+  - hook payloads: `config.redactor` redacts the hook URL, and hooks never receive headers or bodies;
+  - `inspect` reports use `redactValue`, from the gateway days on.
 
 ### 3.10 Conformance suite (`@bawabajs/core/conformance`)
 
-A shared Vitest suite that every client runs against itself. It checks:
-- capabilities are declared for every operation;
-- `Money` round-trips for every supported currency;
-- every verifier fails closed on a missing signature, a wrong signature, a changed signed field, and an unknown or missing event type;
-- every verifier takes the raw body;
-- no mutation is retried, and a 5xx on a mutation yields `OutcomeUnknownError` with the idempotency claim kept;
-- no secret appears in errors, hooks or `inspect` output;
-- `inspect` never throws.
+A shared Vitest suite that every client runs against itself: `await runConformanceSuite(subject)` at the top level of a client's test file. Vitest is loaded with `import()` only when the suite runs, because Vitest is ESM-only and refuses `require()`; so requiring the CJS build of this entry stays safe. The subject declares the client object, its test secrets, its capabilities and operations, its `Money` conversion, one entry per webhook (a validly signed request, the tampered requests and the client's `verify` and `inspect`), and one entry per mutation (a `run(context)` that calls it with the suite's `fetch`, idempotency store and hooks). Node's `util.inspect` can be passed in, because core can't import it.
+
+Each check is also exported as a function that returns a list of problems, so the suite itself is tested against broken clients. It checks:
+- the subject declares operations, secrets, webhooks and mutations;
+- every operation has a valid capability level;
+- `Money` round-trips through the client's conversion for every supported currency (`SAMPLE_MINOR_AMOUNTS`);
+- every verifier accepts the valid request as a string and as bytes, refuses a parsed body, and fails closed with `SignatureVerificationError` on a missing signature, a wrong signature, each changed signed field (at least one is required), and an unknown or missing event type;
+- each mutation, after a 503, a 500 and a network error, calls `fetch` exactly once, throws `OutcomeUnknownError` and keeps the idempotency claim; after a 400 it throws the `ApiError` and releases the claim;
+- no secret appears in the client object, in any error (including its cause chain), in hook events or in `inspect` reports, through `String`, JSON or Node's `inspect`;
+- `inspect` never throws, including for malformed input.
+
+Problems name errors by class and code only, never by message, so the suite never prints a secret it finds.
 
 ## 4. Webhook rules shared by all gateways
 
@@ -307,8 +318,15 @@ bawaba/
 │   ├── check-no-secrets.ts     secret scanner
 │   ├── smoke/run.ts            pack, install and import every entry point (ESM and CJS)
 │   ├── smoke/runtimes.ts       import every built entry point under Bun, Deno or Node
+│   ├── test-cards.ts           public test card numbers and the Luhn check, shared with the scrubber
 │   └── tsconfig.json           Node types, for scripts only
-├── tools/                      (day 3) validation tooling, never published (section 12)
+├── tools/                      validation tooling, never published (section 12)
+│   ├── capture/capture.ts      the capture format, shared by the receiver and the local server
+│   ├── capture-server.ts       local capture behind a tunnel
+│   ├── fixtures/               scrub.ts, record.ts, signers.ts
+│   ├── webhook-receiver/       Cloudflare Worker (src/index.ts, wrangler.toml, README.md)
+│   ├── test/                   the `tools` Vitest project
+│   └── tsconfig.json           Node types, for the tools
 ├── .editorconfig  .gitattributes  .gitignore  .node-version (24)
 ├── biome.json
 ├── CONTRIBUTING.md  LICENSE (MIT)  README.md  SECURITY.md
@@ -361,12 +379,13 @@ The adapter packages (`express/`, `nestjs/`, `next/`) are created after 1.0, not
 | Script | Runs |
 |---|---|
 | `build` | `tsdown` in every package |
-| `typecheck` | `tsc -p tsconfig.json && tsc -p scripts/tsconfig.json` |
+| `typecheck` | `tsc -p tsconfig.json && tsc -p scripts/tsconfig.json && tsc -p tools/tsconfig.json` |
 | `test` / `test:watch` | Vitest |
+| `test:coverage` | Vitest with coverage and its thresholds (used by `ci`) |
 | `lint` / `format` | Biome |
 | `check:packages` | `publint && attw --pack . --profile node16` in every package |
 | `check:deps`, `check:secrets`, `smoke`, `smoke:runtime` | The TypeScript scripts in `scripts/`, run with `node --experimental-strip-types --disable-warning=ExperimentalWarning` so Node 22.12 runs them too |
-| `ci` | lint → typecheck → check:deps → check:secrets → test → build → check:packages → smoke. **Run it with `pnpm run ci`.** |
+| `ci` | lint → typecheck → check:deps → check:secrets → test:coverage → build → check:packages → smoke. **Run it with `pnpm run ci`.** |
 | `changeset`, `version-packages`, `release` | Changesets |
 
 ### 8.4 TypeScript
@@ -387,7 +406,8 @@ The adapter packages (`express/`, `nestjs/`, `next/`) are created after 1.0, not
   - one inline project per package folder, inheriting `resolve.conditions`;
   - the default run includes `test/**/*.test.ts` and excludes `test/contract/`;
   - `BAWABA_CONTRACT=1` runs only `test/contract/` (used by `contract.yml`);
-  - `v8` coverage over `packages/*/src`, with thresholds turned on once core is implemented.
+  - a `tools` project for the validation tooling's tests (left out of contract runs);
+  - `v8` coverage over `packages/*/src`, with 100% thresholds (lines, branches, functions, statements) on `packages/core/src` and `packages/testing/src`. Each gateway package gets its threshold on its build day.
 - **`.changeset/config.json`:** a fixed group `[["bawaba", "@bawabajs/*"]]`, public access, base branch `main`. At `1.0`, the gateway packages switch to independent versions.
 
 ### 8.6 Package template
@@ -499,13 +519,16 @@ All scripts are TypeScript (`scripts/*.ts`), type-checked with `scripts/tsconfig
 
 ## 12. Validation tooling (`tools/`, never published)
 
-1. **Webhook receiver:** a permanent public HTTPS endpoint, either a Cloudflare Worker with KV or a Vercel function (free tier).
-   - It stores the raw callbacks (body bytes, headers, query) for CI to fetch.
-   - Each sandbox is configured to call it.
-   - It never stores secrets.
-2. **Local tunnel** (cloudflared or ngrok), for interactive capture.
-3. **Playwright (dev dependency only)**, to drive hosted pages, 3DS challenges, the Amazon Payment Services form POST and Geidea's JS checkout. Gateways may block headless browsers (Uncertain); the fallback is a documented manual capture run before each release.
-4. **Fixture recorder and scrubber:** saves a scenario's request, response and callback, scrubs it (section 10, including phone numbers) and re-signs it with a test secret.
+1. **Webhook receiver** (`tools/webhook-receiver/`, built on Day 3): a Cloudflare Worker with KV on the free tier, chosen over a Vercel function because KV gives storage with no database.
+   - `ANY /hooks/<gateway>[/<label>]` stores the raw callback (method, path, raw query string, headers, body bytes as base64) for 30 days and answers `200 OK`. Redirects arrive as `GET` and are captured the same way.
+   - It drops credential and proxy headers (`authorization`, `cookie`, `cf-*`, `x-forwarded-*` and the like) and refuses bodies over 1 MiB. It never stores secrets.
+   - `GET /captures/<gateway>[/<key>]` reads them back with a bearer token (`READ_TOKEN`, a Worker secret), compared over SHA-256 digests in constant time.
+   - Each sandbox is configured to call it; the deploy steps are in its README.
+2. **Local capture** (`tools/capture-server.ts`) behind a tunnel (cloudflared or ngrok), for interactive sessions. It writes the same capture format to the git-ignored `tools/.captures/`.
+3. **Playwright (dev dependency only)**, to drive hosted pages, 3DS challenges, the Amazon Payment Services form POST and Geidea's JS checkout. Gateways may block headless browsers (Uncertain); the fallback is a documented manual capture run before each release. Not added yet.
+4. **Fixture recorder and scrubber** (`tools/fixtures/`):
+   - **`scrub.ts`** replaces names, emails, phones (consistently: one real number, one fake), addresses, card numbers and masked PANs, BIN and last-four fields, credentials, merchant IDs and IP addresses, by key and, for emails and card numbers, wherever they appear. It works on the raw text and never re-serializes JSON or forms, so every byte it doesn't replace stays as captured. It also drops `content-length` and `host`.
+   - **`record.ts`** scrubs a capture, re-signs it with `test_secret_do_not_use` through the gateway's signer in `signers.ts`, and writes `fixtures/<gateway>/<source>-<scenario>.json`. Signers are added on each gateway's build day; until then it writes a draft to `tools/.captures/drafts/` and exits with code 2. A `sandbox` fixture needs an account alias and `--verified-original`.
 
 ## 13. Uncertainty register
 

@@ -1,3 +1,5 @@
+import type { Redactor } from "../redaction.js";
+
 export type OperationKind = "read" | "mutation";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -39,6 +41,7 @@ export interface HttpClientConfig {
   readonly onRequest?: (event: RequestEvent) => void;
   readonly onResponse?: (event: ResponseEvent) => void;
   readonly retry?: Partial<RetryDependencies>;
+  readonly redactor?: Redactor;
 }
 
 export interface RequestSpec {

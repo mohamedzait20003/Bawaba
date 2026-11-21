@@ -24,6 +24,11 @@ const projects = packageNames.map((name) => ({
   },
 }));
 
+// The validation tooling (tools/) is never published, but its receiver and scrubber are tested like the packages.
+if (!contract && existsSync("tools/test")) {
+  projects.push({ extends: true, test: { name: "tools", root: "tools", include: ["test/**/*.test.ts"], exclude: [] } });
+}
+
 export default defineConfig({
   resolve: { conditions },
   ssr: { resolve: { conditions, externalConditions: conditions } },
@@ -35,8 +40,8 @@ export default defineConfig({
       provider: "v8",
       include: ["packages/*/src/**"],
       thresholds: {
-        "packages/core/src/{errors,money,encoding,crypto}.ts": { lines: 100, branches: 100, functions: 100, statements: 100 },
-        "packages/core/src/http/**": { lines: 100, branches: 100, functions: 100, statements: 100 },
+        "packages/core/src/**": { lines: 100, branches: 100, functions: 100, statements: 100 },
+        "packages/testing/src/**": { lines: 100, branches: 100, functions: 100, statements: 100 },
       },
     },
   },

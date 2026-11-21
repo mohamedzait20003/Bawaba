@@ -1,0 +1,8 @@
+name = "bawaba-webhook-receiver"
+main = "src/index.ts"
+compatibility_date = "2026-11-01"
+
+# Create the namespace with `npx wrangler kv namespace create CAPTURES` and paste its id here.
+[[kv_namespaces]]
+binding = "CAPTURES"
+id = "REPLACE_WITH_THE_KV_NAMESPACE_ID"

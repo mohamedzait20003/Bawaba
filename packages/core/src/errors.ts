@@ -59,16 +59,17 @@ export interface ApiErrorJSON extends BawabaErrorJSON {
 export class ApiError extends BawabaError {
   override readonly name: string = "ApiError";
   readonly status: number;
-  readonly headers: Readonly<Record<string, string>>;
+  declare readonly headers: Readonly<Record<string, string>>;
   readonly requestId: string | undefined;
-  readonly raw: unknown;
+  declare readonly raw: unknown;
 
   constructor(message: string, code: ErrorCode, options: ApiErrorOptions) {
     super(message, code, options);
     this.status = options.status;
-    this.headers = options.headers ?? {};
     this.requestId = options.requestId;
-    this.raw = options.raw;
+
+    // Not enumerable, so logging the error shows neither the headers nor the gateway's body.
+    Object.defineProperties(this, { headers: { value: options.headers ?? {} }, raw: { value: options.raw } });
   }
 
   override toJSON(): ApiErrorJSON {
