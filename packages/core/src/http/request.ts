@@ -125,7 +125,9 @@ export function prepareRequest(config: HttpClientConfig, spec: RequestSpec): Pre
 
   const { body, contentType } = encodeBody(spec);
 
-  return { method: spec.method, url: url.href, hookUrl: url.origin + url.pathname, headers: buildHeaders(config, spec, contentType), body };
+  const hookUrl = url.origin + url.pathname;
+
+  return { method: spec.method, url: url.href, hookUrl: config.redactor?.redact(hookUrl) ?? hookUrl, headers: buildHeaders(config, spec, contentType), body };
 }
 
 const defaultFetch: FetchLike = (input, init) => globalThis.fetch(input, init);

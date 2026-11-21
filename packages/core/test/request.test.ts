@@ -1,4 +1,4 @@
-import { BadRequestError, ConfigError, GatewayServerError, InvalidArgumentError, NotFoundError, RateLimitError } from "@bawabajs/core";
+import { BadRequestError, ConfigError, GatewayServerError, InvalidArgumentError, NotFoundError, RateLimitError, REDACTED, Redactor } from "@bawabajs/core";
 import { http, HttpResponse as MswResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -225,6 +225,19 @@ describe("sendOnce: hooks", () => {
     expect(responses[0]?.status).toBe(200);
     expect(responses[0]?.failure).toBeUndefined();
     expect(responses[0]?.durationMs).toBeGreaterThanOrEqual(0);
+  });
+
+  it("redacts configured secrets from the hook URL", async () => {
+    const requests: RequestEvent[] = [];
+    const config: HttpClientConfig = {
+      ...base,
+      fetch: fakeFetch(() => json({})).fetch,
+      redactor: new Redactor(["tok_secret_1"]),
+      onRequest: (event) => requests.push(event),
+    };
+    await attempt(config, { ...read, path: "/v1/tokens/{token}", pathParams: { token: "tok_secret_1" } });
+
+    expect(requests[0]?.url).toBe(`https://api.example.test/v1/tokens/${REDACTED}`);
   });
 
   it("reports the failure kind to onResponse", async () => {
