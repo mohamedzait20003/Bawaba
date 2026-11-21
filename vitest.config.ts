@@ -24,6 +24,11 @@ const projects = packageNames.map((name) => ({
   },
 }));
 
+// The validation tooling (tools/) is never published, but its receiver and scrubber are tested like the packages.
+if (!contract && existsSync("tools/test")) {
+  projects.push({ extends: true, test: { name: "tools", root: "tools", include: ["test/**/*.test.ts"], exclude: [] } });
+}
+
 export default defineConfig({
   resolve: { conditions },
   ssr: { resolve: { conditions, externalConditions: conditions } },

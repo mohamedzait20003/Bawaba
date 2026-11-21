@@ -10,6 +10,12 @@ coverage/
 *.tgz
 scripts/smoke/.tmp/
 
+# Raw captures and unsigned drafts from the validation tools: may hold sandbox personal data, never committed
+tools/.captures/
+
+# Wrangler state for the webhook receiver
+tools/webhook-receiver/.wrangler/
+
 # Logs
 *.log
 npm-debug.log*
